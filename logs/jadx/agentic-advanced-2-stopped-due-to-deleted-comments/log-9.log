@@ -1,0 +1,805 @@
+====================
+Type='DEREFERENCE_NULLABLE', message='dereferenced expression condition is @Nullable'
+/home/vscode/nullness-benchmarks/jadx/jadx-core/src/main/java/jadx/core/codegen/ConditionGen.java:57
+		switch (condition.getMode()) {
+Log:
+15:26:28.282 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+==============================
+15:26:28.282 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.COUNT = 3
+15:26:28.282 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.PROMPTS SIZE = 3
+15:26:28.282 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT TOKENS USAGE: Token usage - Uncached Prompt: 4008, Cached Prompt: 0, Completion: 1695, Total: 5703
+15:26:28.282 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+ChatGPT usage reset
+15:26:28.282 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+9 : TOP LEVEL CALL TO FIX ERROR: Type='DEREFERENCE_NULLABLE', message='dereferenced expression condition is @Nullable'
+/home/vscode/nullness-benchmarks/jadx/jadx-core/src/main/java/jadx/core/codegen/ConditionGen.java:57
+		switch (condition.getMode()) {
+15:26:37.844 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.fix
+Fixing error: Type='DEREFERENCE_NULLABLE', message='dereferenced expression condition is @Nullable'
+/home/vscode/nullness-benchmarks/jadx/jadx-core/src/main/java/jadx/core/codegen/ConditionGen.java:57
+		switch (condition.getMode()) {
+15:26:37.844 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Resolving dereference error: Type='DEREFERENCE_NULLABLE', message='dereferenced expression condition is @Nullable'
+/home/vscode/nullness-benchmarks/jadx/jadx-core/src/main/java/jadx/core/codegen/ConditionGen.java:57
+		switch (condition.getMode()) {
+15:26:37.844 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Checking nullability possibility at error point
+15:26:37.851 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkNullabilityPossibilityAtErrorPoint
+Asking if the expression can be null at error point point
+15:26:37.851 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the expression "condition" at line "switch (condition.getMode()) {" can possibly be null in the method below.
+
+**Method:**
+private void add(ICodeWriter code, CondStack stack, @Nullable IfCondition condition) throws CodegenException {
+		stack.push(condition);
+		switch (condition.getMode()) {
+			case COMPARE:
+				addCompare(code, stack, condition.getCompare());
+				break;
+
+			case TERNARY:
+				addTernary(code, stack, condition);
+				break;
+
+			case NOT:
+				addNot(code, stack, condition);
+				break;
+
+			case AND:
+			case OR:
+				addAndOr(code, stack, condition);
+				break;
+
+			default:
+				throw new JadxRuntimeException("Unknown condition mode: " + condition.getMode());
+		}
+		stack.pop();
+}
+
+### Analysis Requirements:
+- Examine all code paths leading to the expression
+- Consider variable assignments, method return values, and control flow
+- Look for null checks, initializations, and guarantees from prior operations
+- Consider the semantics and contracts of called methods
+
+### Response Format:
+
+**If the expression CAN be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>YES</value>
+</response>
+```
+
+**If the expression CANNOT be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>NO</value>
+</response>
+```
+
+**If you need more information to make a determination:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>UNKNOWN</value>
+    <!-- Include <requests> only if additional information is needed -->
+    <requests>
+        <request><![CDATA[YOUR REQUEST 1]]></request>
+        <request><![CDATA[YOUR REQUEST 2]]></request>
+    </requests>
+</response>
+```
+15:26:37.852 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+15:26:46.286 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+```xml
+<response>
+    <reason><![CDATA[
+From the provided method alone:
+
+- The parameter `condition` is taken as-is and immediately used:
+  - First in `stack.push(condition);`
+  - Then in `condition.getMode()` inside the `switch` expression.
+- There is no null check on `condition` before these uses.
+- Java permits passing `null` as an argument to `add(...)` unless constrained elsewhere.
+- If `condition` were null:
+  - `stack.push(condition);` could still run if `push` accepts null, but
+  - `condition.getMode()` would immediately throw a `NullPointerException`.
+
+However, the question is whether `condition` *can possibly* be null, which depends on code and contracts *outside* this method:
+
+- If callers of `add(...)` never pass null for `condition` (by construction or by explicit checks), or if there is a documented/guaranteed contract that `condition` is non-null, then at runtime it will not be null.
+- If there is no such guarantee, and no prior null checks in the call chain, then `condition` is *potentially* null from the language perspective.
+
+Given only this method, there is no information guaranteeing non-nullness of `condition`. Therefore, purely from the provided snippet and without additional contracts or annotations, we cannot conclusively determine whether `condition` is always non-null at runtime; it is *possible* that callers pass null.
+
+We need more information about:
+- How `add(...)` is called.
+- Any invariants/annotations on `IfCondition` or on the `add` method parameters.
+    ]]></reason>
+    <value>UNKNOWN</value>
+    <requests>
+        <request><![CDATA[Show where and how add(ICodeWriter code, CondStack stack, IfCondition condition) is called, including any surrounding null checks on condition.]]></request>
+        <request><![CDATA[Provide any relevant annotations or documentation (e.g., @NonNull/@Nullable, Javadoc contracts) for the parameter IfCondition condition and the IfCondition type itself.]]></request>
+    </requests>
+</response>
+```
+15:26:46.287 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+```xml
+<response>
+    <reason><![CDATA[
+From the provided method alone:
+
+- The parameter `condition` is taken as-is and immediately used:
+  - First in `stack.push(condition);`
+  - Then in `condition.getMode()` inside the `switch` expression.
+- There is no null check on `condition` before these uses.
+- Java permits passing `null` as an argument to `add(...)` unless constrained elsewhere.
+- If `condition` were null:
+  - `stack.push(condition);` could still run if `push` accepts null, but
+  - `condition.getMode()` would immediately throw a `NullPointerException`.
+
+However, the question is whether `condition` *can possibly* be null, which depends on code and contracts *outside* this method:
+
+- If callers of `add(...)` never pass null for `condition` (by construction or by explicit checks), or if there is a documented/guaranteed contract that `condition` is non-null, then at runtime it will not be null.
+- If there is no such guarantee, and no prior null checks in the call chain, then `condition` is *potentially* null from the language perspective.
+
+Given only this method, there is no information guaranteeing non-nullness of `condition`. Therefore, purely from the provided snippet and without additional contracts or annotations, we cannot conclusively determine whether `condition` is always non-null at runtime; it is *possible* that callers pass null.
+
+We need more information about:
+- How `add(...)` is called.
+- Any invariants/annotations on `IfCondition` or on the `add` method parameters.
+    ]]></reason>
+    <value>UNKNOWN</value>
+    <requests>
+        <request><![CDATA[Show where and how add(ICodeWriter code, CondStack stack, IfCondition condition) is called, including any surrounding null checks on condition.]]></request>
+        <request><![CDATA[Provide any relevant annotations or documentation (e.g., @NonNull/@Nullable, Javadoc contracts) for the parameter IfCondition condition and the IfCondition type itself.]]></request>
+    </requests>
+</response>
+```
+15:26:46.290 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Unknown: From the provided method alone:
+
+- The parameter `condition` is taken as-is and immediately used:
+  - First in `stack.push(condition);`
+  - Then in `condition.getMode()` inside the `switch` expression.
+- There is no null check on `condition` before these uses.
+- Java permits passing `null` as an argument to `add(...)` unless constrained elsewhere.
+- If `condition` were null:
+  - `stack.push(condition);` could still run if `push` accepts null, but
+  - `condition.getMode()` would immediately throw a `NullPointerException`.
+
+However, the question is whether `condition` *can possibly* be null, which depends on code and contracts *outside* this method:
+
+- If callers of `add(...)` never pass null for `condition` (by construction or by explicit checks), or if there is a documented/guaranteed contract that `condition` is non-null, then at runtime it will not be null.
+- If there is no such guarantee, and no prior null checks in the call chain, then `condition` is *potentially* null from the language perspective.
+
+Given only this method, there is no information guaranteeing non-nullness of `condition`. Therefore, purely from the provided snippet and without additional contracts or annotations, we cannot conclusively determine whether `condition` is always non-null at runtime; it is *possible* that callers pass null.
+
+We need more information about:
+- How `add(...)` is called.
+- Any invariants/annotations on `IfCondition` or on the `add` method parameters.
+15:26:46.290 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+15:26:46.297 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveParameterDereferenceError
+Resolving parameter dereference error.
+15:26:46.407 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkIfParamIsNullable
+Asking if the parameter is nullable: condition
+15:26:46.414 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the parameter `condition` can receive `null` based on how the method is called in the codebase.
+
+**Important:** Ignore any existing @Nullable annotations or nullability annotations. Base your analysis only on actual usage patterns in the call chain.
+
+### Analysis Guidelines:
+- Examine all callers in the provided call chain to see if any pass null
+- Consider if the parameter is reassigned or modified before use
+- If the parameter is passed to or checked by another method, request that method's declaration if not provided
+- Consider if the method would crash if the parameter were null (indicating it's likely never null in practice)
+- Look for defensive null checks within the method (which may suggest null is possible)
+
+**Method:**
+Depth: 0
+```java
+class jadx.core.codegen.ConditionGen {
+private void add(ICodeWriter code, CondStack stack, @Nullable IfCondition condition) throws CodegenException {
+		stack.push(condition);
+		switch (condition.getMode()) {
+			case COMPARE:
+				addCompare(code, stack, condition.getCompare());
+				break;
+
+			case TERNARY:
+				addTernary(code, stack, condition);
+				break;
+
+			case NOT:
+				addNot(code, stack, condition);
+				break;
+
+			case AND:
+			case OR:
+				addAndOr(code, stack, condition);
+				break;
+
+			default:
+				throw new JadxRuntimeException("Unknown condition mode: " + condition.getMode());
+		}
+		stack.pop();
+}
+}
+```
+Depth: 1
+```java
+class jadx.core.codegen.ConditionGen {
+public void add(ICodeWriter code, @Nullable IfCondition condition) throws CodegenException {
+		add(code, new CondStack(), condition);
+}private void addTernary(ICodeWriter code, CondStack stack, IfCondition condition) throws CodegenException {
+		add(code, stack, condition.first());
+		code.add(" ? ");
+		add(code, stack, condition.second());
+		code.add(" : ");
+		add(code, stack, condition.third());
+}private void wrap(ICodeWriter code, CondStack stack, IfCondition cond) throws CodegenException {
+		boolean wrap = isWrapNeeded(cond);
+		if (wrap) {
+			code.add('(');
+		}
+		add(code, stack, cond);
+		if (wrap) {
+			code.add(')');
+		}
+}
+}
+```
+Depth: 2
+```java
+class jadx.core.codegen.RegionGen {
+public void makeLoop(LoopRegion region, ICodeWriter code) throws CodegenException {
+		code.startLineWithNum(region.getSourceLine());
+		LoopLabelAttr labelAttr = region.getInfo().getStart().get(AType.LOOP_LABEL);
+		if (labelAttr != null) {
+			code.add(mgen.getNameGen().getLoopLabel(labelAttr)).add(": ");
+		}
+
+		IfCondition condition = region.getCondition();
+		if (condition == null) {
+			// infinite loop
+			code.add("while (true) {");
+			makeRegionIndent(code, region.getBody());
+			code.startLine('}');
+			return;
+		}
+		InsnNode condInsn = condition.getFirstInsn();
+		InsnCodeOffset.attach(code, condInsn);
+
+		ConditionGen conditionGen = new ConditionGen(this);
+		LoopType type = region.getType();
+		if (type != null) {
+			if (type instanceof ForLoop) {
+				ForLoop forLoop = (ForLoop) type;
+				code.add("for (");
+				makeInsn(forLoop.getInitInsn(), code, Flags.INLINE);
+				code.add("; ");
+				conditionGen.add(code, condition);
+				code.add("; ");
+				makeInsn(forLoop.getIncrInsn(), code, Flags.INLINE);
+				code.add(") {");
+				CodeGenUtils.addCodeComments(code, mth, condInsn);
+				makeRegionIndent(code, region.getBody());
+				code.startLine('}');
+				return;
+			}
+			if (type instanceof ForEachLoop) {
+				ForEachLoop forEachLoop = (ForEachLoop) type;
+				code.add("for (");
+				declareVar(code, forEachLoop.getVarArg());
+				code.add(" : ");
+				addArg(code, forEachLoop.getIterableArg(), false);
+				code.add(") {");
+				CodeGenUtils.addCodeComments(code, mth, condInsn);
+				makeRegionIndent(code, region.getBody());
+				code.startLine('}');
+				return;
+			}
+			throw new JadxRuntimeException("Unknown loop type: " + type.getClass());
+		}
+		if (region.isConditionAtEnd()) {
+			code.add("do {");
+			CodeGenUtils.addCodeComments(code, mth, condInsn);
+			makeRegionIndent(code, region.getBody());
+			code.startLineWithNum(region.getSourceLine());
+			code.add("} while (");
+			conditionGen.add(code, condition);
+			code.add(");");
+		} else {
+			code.add("while (");
+			conditionGen.add(code, condition);
+			code.add(") {");
+			CodeGenUtils.addCodeComments(code, mth, condInsn);
+			makeRegionIndent(code, region.getBody());
+			code.startLine('}');
+		}
+}public void makeIf(IfRegion region, ICodeWriter code, boolean newLine) throws CodegenException {
+		if (newLine) {
+			code.startLineWithNum(region.getSourceLine());
+		} else {
+			code.attachSourceLine(region.getSourceLine());
+		}
+		boolean comment = region.contains(AFlag.COMMENT_OUT);
+		if (comment) {
+			code.add("// ");
+		}
+
+		code.add("if (");
+		new ConditionGen(this).add(code, region.getCondition());
+		code.add(") {");
+		if (code.isMetadataSupported()) {
+			List<BlockNode> conditionBlocks = region.getConditionBlocks();
+			if (!conditionBlocks.isEmpty()) {
+				BlockNode blockNode = conditionBlocks.get(0);
+				InsnNode lastInsn = BlockUtils.getLastInsn(blockNode);
+				InsnCodeOffset.attach(code, lastInsn);
+				CodeGenUtils.addCodeComments(code, mth, lastInsn);
+			}
+		}
+		makeRegionIndent(code, region.getThenRegion());
+		if (comment) {
+			code.startLine("// }");
+		} else {
+			code.startLine('}');
+		}
+
+		IContainer els = region.getElseRegion();
+		if (RegionUtils.notEmpty(els)) {
+			code.add(" else ");
+			if (connectElseIf(code, els)) {
+				return;
+			}
+			code.add('{');
+			makeRegionIndent(code, els);
+			if (comment) {
+				code.startLine("// }");
+			} else {
+				code.startLine('}');
+			}
+		}
+}
+}
+```
+```java
+class jadx.core.utils.DebugUtils {
+private static void printRegionSpecificInfo(ICodeWriter cw, String indent,
+			MethodNode mth, IRegion region, boolean printInsns) {
+		if (region instanceof LoopRegion) {
+			LoopRegion loop = (LoopRegion) region;
+			IfCondition condition = loop.getCondition();
+			if (printInsns && condition != null) {
+				ConditionGen conditionGen = new ConditionGen(new InsnGen(MethodGen.getFallbackMethodGen(mth), true));
+				cw.startLine(indent).add("|> ");
+				try {
+					conditionGen.add(cw, condition);
+				} catch (Exception e) {
+					cw.startLine(indent).add(">!! ").add(condition.toString());
+				}
+			}
+		}
+}
+}
+```
+```java
+class jadx.core.codegen.ConditionGen {
+private void add(ICodeWriter code, CondStack stack, @Nullable IfCondition condition) throws CodegenException {
+		stack.push(condition);
+		switch (condition.getMode()) {
+			case COMPARE:
+				addCompare(code, stack, condition.getCompare());
+				break;
+
+			case TERNARY:
+				addTernary(code, stack, condition);
+				break;
+
+			case NOT:
+				addNot(code, stack, condition);
+				break;
+
+			case AND:
+			case OR:
+				addAndOr(code, stack, condition);
+				break;
+
+			default:
+				throw new JadxRuntimeException("Unknown condition mode: " + condition.getMode());
+		}
+		stack.pop();
+}private void addAndOr(ICodeWriter code, CondStack stack, IfCondition condition) throws CodegenException {
+		String mode = condition.getMode() == Mode.AND ? " && " : " || ";
+		Iterator<IfCondition> it = condition.getArgs().iterator();
+		while (it.hasNext()) {
+			wrap(code, stack, it.next());
+			if (it.hasNext()) {
+				code.add(mode);
+			}
+		}
+}private void addNot(ICodeWriter code, CondStack stack, IfCondition condition) throws CodegenException {
+		code.add('!');
+		wrap(code, stack, condition.getArgs().get(0));
+}void wrap(ICodeWriter code, IfCondition condition) throws CodegenException {
+		wrap(code, new CondStack(), condition);
+}
+}
+```
+```java
+class jadx.core.codegen.InsnGen {
+private void makeTernary(TernaryInsn insn, ICodeWriter code, Set<Flags> state) throws CodegenException {
+		boolean wrap = state.contains(Flags.BODY_ONLY);
+		if (wrap) {
+			code.add('(');
+		}
+		InsnArg first = insn.getArg(0);
+		InsnArg second = insn.getArg(1);
+		ConditionGen condGen = new ConditionGen(this);
+		if (first.isTrue() && second.isFalse()) {
+			condGen.add(code, insn.getCondition());
+		} else {
+			condGen.wrap(code, insn.getCondition());
+			code.add(" ? ");
+			addArg(code, first, false);
+			code.add(" : ");
+			addArg(code, second, false);
+		}
+		if (wrap) {
+			code.add(')');
+		}
+}
+}
+```
+
+
+**Call chain:**
+The following shows how this method is called throughout the codebase:
+edu.ucr.cs.riple.injector.SourceCode@4a37191a
+
+### Response Format:
+
+**If the parameter CANNOT be null:**
+```xml
+<response>
+    <reason><![CDATA[Explain why the parameter cannot be null based on call chain analysis]]></reason>
+    <value>NO</value>
+</response>
+```
+
+**If the parameter CAN be null:**
+```xml
+<response>
+    <reason><![CDATA[Explain why the parameter can be null based on call chain analysis]]></reason>
+    <value>YES</value>
+</response>
+```
+
+**If you need declarations of other methods to make a determination:**
+```xml
+<response>
+    <reason><![CDATA[Explain why you need these method declarations]]></reason>
+    <success>false</success>
+    <methods>
+      <method>methodName</method>
+    </methods>
+  </response>
+```
+
+15:26:46.416 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+15:26:58.927 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+<response>
+    <reason><![CDATA[
+The analyzed parameter is `condition` in `ConditionGen.add(ICodeWriter code, CondStack stack, IfCondition condition)` (and its public wrapper `add(ICodeWriter code, IfCondition condition)`).
+
+Looking at all provided callers:
+
+1. `RegionGen.makeLoop`:
+   - Retrieves `IfCondition condition = region.getCondition();`
+   - Immediately checks `if (condition == null)` and handles the null case as an infinite loop (`while (true) { ... }`) and then `return;`.
+   - Only if `condition != null` does it proceed to call `conditionGen.add(code, condition);`.
+   - Therefore, all calls from `makeLoop` pass a non-null `condition`.
+
+2. `RegionGen.makeIf`:
+   - Calls `new ConditionGen(this).add(code, region.getCondition());` directly.
+   - There is no explicit null check before this call in the snippet, but `region.getCondition()` is logically required for an `if` region; if it were null, `ConditionGen.add` would immediately dereference it via `condition.getMode()` and crash. The code does not guard against null here, indicating the design assumes `region.getCondition()` is never null in this context.
+   - There is no path shown where `null` is intentionally passed.
+
+3. `DebugUtils.printRegionSpecificInfo`:
+   - Retrieves `IfCondition condition = loop.getCondition();`
+   - Checks `if (printInsns && condition != null)` before creating `ConditionGen` and calling `conditionGen.add(cw, condition);`.
+   - Thus, this caller also guarantees `condition` is non-null when passed.
+
+4. `InsnGen.makeTernary`:
+   - Calls `condGen.add(code, insn.getCondition());` and `condGen.wrap(code, insn.getCondition());`.
+   - There is no null check in this snippet, but again, if `insn.getCondition()` were null, downstream calls (e.g., `condition.getMode()`, `wrap` and `addTernary`) would dereference it and throw, and there is no defensive handling implying such a situation is expected. This usage pattern implies `insn.getCondition()` is considered non-null by design.
+
+Within `ConditionGen.add` itself, `condition` is immediately used:
+```java
+stack.push(condition);
+switch (condition.getMode()) {
+    ...
+}
+```
+There is no null check; a null argument would cause an immediate `NullPointerException`. The internal helper methods (`addTernary`, `addAndOr`, `addNot`, `wrap`) likewise dereference the `IfCondition` argument with no null checks. Where callers *do* anticipate the possibility of `null` (e.g., `LoopRegion.getCondition()`), they explicitly filter it out before calling `add`.
+
+Across all observed call sites, `add(..., condition)` is only invoked after an explicit null check or in contexts that clearly rely on a non-null condition (and would otherwise crash). There is no observed usage where `null` is intentionally passed.
+
+Based on these usage patterns, the intended and practical contract is that `condition` is never null when passed to `ConditionGen.add`.
+    ]]></reason>
+    <value>NO</value>
+</response>
+15:26:58.929 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+    <reason><![CDATA[
+The analyzed parameter is `condition` in `ConditionGen.add(ICodeWriter code, CondStack stack, IfCondition condition)` (and its public wrapper `add(ICodeWriter code, IfCondition condition)`).
+
+Looking at all provided callers:
+
+1. `RegionGen.makeLoop`:
+   - Retrieves `IfCondition condition = region.getCondition();`
+   - Immediately checks `if (condition == null)` and handles the null case as an infinite loop (`while (true) { ... }`) and then `return;`.
+   - Only if `condition != null` does it proceed to call `conditionGen.add(code, condition);`.
+   - Therefore, all calls from `makeLoop` pass a non-null `condition`.
+
+2. `RegionGen.makeIf`:
+   - Calls `new ConditionGen(this).add(code, region.getCondition());` directly.
+   - There is no explicit null check before this call in the snippet, but `region.getCondition()` is logically required for an `if` region; if it were null, `ConditionGen.add` would immediately dereference it via `condition.getMode()` and crash. The code does not guard against null here, indicating the design assumes `region.getCondition()` is never null in this context.
+   - There is no path shown where `null` is intentionally passed.
+
+3. `DebugUtils.printRegionSpecificInfo`:
+   - Retrieves `IfCondition condition = loop.getCondition();`
+   - Checks `if (printInsns && condition != null)` before creating `ConditionGen` and calling `conditionGen.add(cw, condition);`.
+   - Thus, this caller also guarantees `condition` is non-null when passed.
+
+4. `InsnGen.makeTernary`:
+   - Calls `condGen.add(code, insn.getCondition());` and `condGen.wrap(code, insn.getCondition());`.
+   - There is no null check in this snippet, but again, if `insn.getCondition()` were null, downstream calls (e.g., `condition.getMode()`, `wrap` and `addTernary`) would dereference it and throw, and there is no defensive handling implying such a situation is expected. This usage pattern implies `insn.getCondition()` is considered non-null by design.
+
+Within `ConditionGen.add` itself, `condition` is immediately used:
+```java
+stack.push(condition);
+switch (condition.getMode()) {
+    ...
+}
+```
+There is no null check; a null argument would cause an immediate `NullPointerException`. The internal helper methods (`addTernary`, `addAndOr`, `addNot`, `wrap`) likewise dereference the `IfCondition` argument with no null checks. Where callers *do* anticipate the possibility of `null` (e.g., `LoopRegion.getCondition()`), they explicitly filter it out before calling `add`.
+
+Across all observed call sites, `add(..., condition)` is only invoked after an explicit null check or in contexts that clearly rely on a non-null condition (and would otherwise crash). There is no observed usage where `null` is intentionally passed.
+
+Based on these usage patterns, the intended and practical contract is that `condition` is never null when passed to `ConditionGen.add`.
+    ]]></reason>
+    <value>NO</value>
+</response>
+15:26:58.933 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Disagreement: The analyzed parameter is `condition` in `ConditionGen.add(ICodeWriter code, CondStack stack, IfCondition condition)` (and its public wrapper `add(ICodeWriter code, IfCondition condition)`).
+
+Looking at all provided callers:
+
+1. `RegionGen.makeLoop`:
+   - Retrieves `IfCondition condition = region.getCondition();`
+   - Immediately checks `if (condition == null)` and handles the null case as an infinite loop (`while (true) { ... }`) and then `return;`.
+   - Only if `condition != null` does it proceed to call `conditionGen.add(code, condition);`.
+   - Therefore, all calls from `makeLoop` pass a non-null `condition`.
+
+2. `RegionGen.makeIf`:
+   - Calls `new ConditionGen(this).add(code, region.getCondition());` directly.
+   - There is no explicit null check before this call in the snippet, but `region.getCondition()` is logically required for an `if` region; if it were null, `ConditionGen.add` would immediately dereference it via `condition.getMode()` and crash. The code does not guard against null here, indicating the design assumes `region.getCondition()` is never null in this context.
+   - There is no path shown where `null` is intentionally passed.
+
+3. `DebugUtils.printRegionSpecificInfo`:
+   - Retrieves `IfCondition condition = loop.getCondition();`
+   - Checks `if (printInsns && condition != null)` before creating `ConditionGen` and calling `conditionGen.add(cw, condition);`.
+   - Thus, this caller also guarantees `condition` is non-null when passed.
+
+4. `InsnGen.makeTernary`:
+   - Calls `condGen.add(code, insn.getCondition());` and `condGen.wrap(code, insn.getCondition());`.
+   - There is no null check in this snippet, but again, if `insn.getCondition()` were null, downstream calls (e.g., `condition.getMode()`, `wrap` and `addTernary`) would dereference it and throw, and there is no defensive handling implying such a situation is expected. This usage pattern implies `insn.getCondition()` is considered non-null by design.
+
+Within `ConditionGen.add` itself, `condition` is immediately used:
+```java
+stack.push(condition);
+switch (condition.getMode()) {
+    ...
+}
+```
+There is no null check; a null argument would cause an immediate `NullPointerException`. The internal helper methods (`addTernary`, `addAndOr`, `addNot`, `wrap`) likewise dereference the `IfCondition` argument with no null checks. Where callers *do* anticipate the possibility of `null` (e.g., `LoopRegion.getCondition()`), they explicitly filter it out before calling `add`.
+
+Across all observed call sites, `add(..., condition)` is only invoked after an explicit null check or in contexts that clearly rely on a non-null condition (and would otherwise crash). There is no observed usage where `null` is intentionally passed.
+
+Based on these usage patterns, the intended and practical contract is that `condition` is never null when passed to `ConditionGen.add`.
+15:26:58.933 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+15:26:58.934 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveRemainingErrors
+Resolving remaining cast to nonnull
+15:26:58.941 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+In the method below, the expression condition is not nullable at the point it is used.
+
+```java
+private void add(ICodeWriter code, CondStack stack, @Nullable IfCondition condition) throws CodegenException {
+		stack.push(condition);
+		switch (condition.getMode()) {
+			case COMPARE:
+				addCompare(code, stack, condition.getCompare());
+				break;
+
+			case TERNARY:
+				addTernary(code, stack, condition);
+				break;
+
+			case NOT:
+				addNot(code, stack, condition);
+				break;
+
+			case AND:
+			case OR:
+				addAndOr(code, stack, condition);
+				break;
+
+			default:
+				throw new JadxRuntimeException("Unknown condition mode: " + condition.getMode());
+		}
+		stack.pop();
+}
+```
+Please rewrite the method so that at the line "		switch (condition.getMode()) {", at the occurrence of: "condition" is replaced with `Nullability.castToNonnull(condition)`
+See the example below, for expression `foo.getBar()`, wrap it with `Nullability.castToNonnull(foo.getBar())`.
+
+```java
+public t(){
+    String l = foo.getBar();
+}
+```
+
+will be:
+```java
+public t(){
+    String l = Nullability.castToNonnull(foo.getBar());
+}
+```
+
+### Instructions:
+
+Do not import any additional classes.
+
+Do not add Java comments.
+
+Only modify relevant lines as required.
+
+Return only the modified method wrapped in the XML format shown below.
+
+Place the Java code inside the <code> tag using a CDATA block with ```java formatting.
+
+Just give me the fixed code snippet in XML format in <response> tag like the example below. I will apply the fix to my codebase. Do not import any additional libraries or classes or add java comments. If you can provide the fixed code snippet, please provide it in the following format and place the code snippet in the <code> tag within ```java block.
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  Your fixed code snippet here
+  ```
+    ]]>
+  </code>
+</response>
+
+15:26:58.942 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+15:27:01.226 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+private void add(ICodeWriter code, CondStack stack, IfCondition condition) throws CodegenException {
+		stack.push(condition);
+		switch (Nullability.castToNonnull(condition).getMode()) {
+			case COMPARE:
+				addCompare(code, stack, condition.getCompare());
+				break;
+
+			case TERNARY:
+				addTernary(code, stack, condition);
+				break;
+
+			case NOT:
+				addNot(code, stack, condition);
+				break;
+
+			case AND:
+			case OR:
+				addAndOr(code, stack, condition);
+				break;
+
+			default:
+				throw new JadxRuntimeException("Unknown condition mode: " + condition.getMode());
+		}
+		stack.pop();
+}
+  ```
+    ]]>
+  </code>
+</response>
+15:27:01.229 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+private void add(ICodeWriter code, CondStack stack, IfCondition condition) throws CodegenException {
+		stack.push(condition);
+		switch (Nullability.castToNonnull(condition).getMode()) {
+			case COMPARE:
+				addCompare(code, stack, condition.getCompare());
+				break;
+
+			case TERNARY:
+				addTernary(code, stack, condition);
+				break;
+
+			case NOT:
+				addNot(code, stack, condition);
+				break;
+
+			case AND:
+			case OR:
+				addAndOr(code, stack, condition);
+				break;
+
+			default:
+				throw new JadxRuntimeException("Unknown condition mode: " + condition.getMode());
+		}
+		stack.pop();
+}
+  ```
+    ]]>
+  </code>
+</response>
+15:27:01.231 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+private void add(ICodeWriter code, CondStack stack, IfCondition condition) throws CodegenException {
+		stack.push(condition);
+		switch (Nullability.castToNonnull(condition).getMode()) {
+			case COMPARE:
+				addCompare(code, stack, condition.getCompare());
+				break;
+
+			case TERNARY:
+				addTernary(code, stack, condition);
+				break;
+
+			case NOT:
+				addNot(code, stack, condition);
+				break;
+
+			case AND:
+			case OR:
+				addAndOr(code, stack, condition);
+				break;
+
+			default:
+				throw new JadxRuntimeException("Unknown condition mode: " + condition.getMode());
+		}
+		stack.pop();
+}
+15:27:01.232 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+15:27:01.232 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.fixDereferenceByRemainingCastToNonnull
+Fixing the error by adding castToNonnull

@@ -1,0 +1,600 @@
+====================
+Type='DEREFERENCE_NULLABLE', message='dereferenced expression node.prev is @Nullable'
+/home/vscode/nullness-benchmarks/gson/gson/src/main/java/com/google/gson/internal/LinkedHashTreeMap.java:254
+      node.prev.next = node.next;
+Log:
+15:12:11.361 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+==============================
+15:12:11.361 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.COUNT = 5
+15:12:11.361 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.PROMPTS SIZE = 5
+15:12:11.361 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT TOKENS USAGE: Token usage - Uncached Prompt: 0, Cached Prompt: 0, Completion: 0, Total: 0
+15:12:11.361 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+ChatGPT usage reset
+15:12:11.361 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+11 : TOP LEVEL CALL TO FIX ERROR: Type='DEREFERENCE_NULLABLE', message='dereferenced expression node.prev is @Nullable'
+/home/vscode/nullness-benchmarks/gson/gson/src/main/java/com/google/gson/internal/LinkedHashTreeMap.java:254
+      node.prev.next = node.next;
+15:12:16.444 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.fix
+Fixing error: Type='DEREFERENCE_NULLABLE', message='dereferenced expression node.prev is @Nullable'
+/home/vscode/nullness-benchmarks/gson/gson/src/main/java/com/google/gson/internal/LinkedHashTreeMap.java:254
+      node.prev.next = node.next;
+15:12:16.444 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Resolving dereference error: Type='DEREFERENCE_NULLABLE', message='dereferenced expression node.prev is @Nullable'
+/home/vscode/nullness-benchmarks/gson/gson/src/main/java/com/google/gson/internal/LinkedHashTreeMap.java:254
+      node.prev.next = node.next;
+15:12:16.445 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Checking nullability possibility at error point
+15:12:16.470 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkNullabilityPossibilityAtErrorPoint
+Asking if the expression can be null at error point point
+15:12:16.470 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the expression "node.prev" at line "node.prev.next = node.next;" can possibly be null in the method below.
+
+**Method:**
+void removeInternal(Node<K, V> node, boolean unlink) {
+    if (unlink) {
+      node.prev.next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null; // Help the GC (for performance)
+    }
+
+    Node<K, V> left = node.left;
+    Node<K, V> right = node.right;
+    Node<K, V> originalParent = node.parent;
+    if (left != null && right != null) {
+
+      /*
+       * To remove a node with both left and right subtrees, move an
+       * adjacent node from one of those subtrees into this node's place.
+       *
+       * Removing the adjacent node may change this node's subtrees. This
+       * node may no longer have two subtrees once the adjacent node is
+       * gone!
+       */
+
+      Node<K, V> adjacent = (left.height > right.height) ? left.last() : right.first();
+      removeInternal(adjacent, false); // takes care of rebalance and size--
+
+      int leftHeight = 0;
+      left = node.left;
+      if (left != null) {
+        leftHeight = left.height;
+        adjacent.left = left;
+        left.parent = adjacent;
+        node.left = null;
+      }
+      int rightHeight = 0;
+      right = node.right;
+      if (right != null) {
+        rightHeight = right.height;
+        adjacent.right = right;
+        right.parent = adjacent;
+        node.right = null;
+      }
+      adjacent.height = Math.max(leftHeight, rightHeight) + 1;
+      replaceInParent(node, adjacent);
+      return;
+    } else if (left != null) {
+      replaceInParent(node, left);
+      node.left = null;
+    } else if (right != null) {
+      replaceInParent(node, right);
+      node.right = null;
+    } else {
+      replaceInParent(node, null);
+    }
+
+    rebalance(originalParent, false);
+    size--;
+    modCount++;
+}
+
+### Analysis Requirements:
+- Examine all code paths leading to the expression
+- Consider variable assignments, method return values, and control flow
+- Look for null checks, initializations, and guarantees from prior operations
+- Consider the semantics and contracts of called methods
+
+### Response Format:
+
+**If the expression CAN be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>YES</value>
+</response>
+```
+
+**If the expression CANNOT be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>NO</value>
+</response>
+```
+
+**If you need more information to make a determination:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>UNKNOWN</value>
+    <!-- Include <requests> only if additional information is needed -->
+    <requests>
+        <request><![CDATA[YOUR REQUEST 1]]></request>
+        <request><![CDATA[YOUR REQUEST 2]]></request>
+    </requests>
+</response>
+```
+15:12:16.471 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+15:12:27.033 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+```xml
+<response>
+    <reason><![CDATA[
+Within the body of removeInternal, there is no explicit null check on node.prev before executing:
+
+    if (unlink) {
+      node.prev.next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null;
+    }
+
+So whether node.prev can be null depends entirely on the invariants of the Node structure and how removeInternal is called.
+
+Typical context (and strongly suggested by the code) is that Node is part of a doubly-linked list with sentinel/header nodes. In such designs:
+
+- Every "real" node in the list has non-null prev and next.
+- The ends of the list are represented by a dummy/sentinel node whose prev/next point to itself or other non-null nodes, so you never remove the sentinel with this method.
+- removeInternal is only ever called on nodes that are part of that doubly-linked list and are not the sentinel.
+
+Under that common contract:
+
+- node is always a list element that has been inserted; thus node.prev and node.next are guaranteed non-null. 
+- unlink must only be true when node is in that list, and in that situation node.prev is non-null by invariant.
+- When unlink is false, the unlink block is skipped and node.prev is never dereferenced at all.
+
+Also, recursively calling removeInternal(adjacent, false) does not affect this guarantee for the original node, because unlink=false in that recursive call prevents touching adjacent.prev/next, and the top-level call that does have unlink=true is assumed to operate on a properly linked node.
+
+Since the question is specifically “can node.prev be null at line node.prev.next = node.next;” and that line is only executed when unlink is true, the answer reduces to: “Does the overall data structure ever call removeInternal(node, true) with node.prev == null?”  
+
+Given the design pattern (doubly-linked list node with prev/next used for LRU or insertion order) and the need for correctness (a null here would be an immediate NPE and an obvious bug), the intended and required invariant is that:
+
+- removeInternal(node, true) is never invoked on a node whose prev is null.
+- A node whose prev is null (if such a state ever exists) is not passed here with unlink=true.
+
+Therefore, under the method’s expected contract and structural invariants, node.prev is not allowed to be null at that line. If it were, the code would be broken and would intermittently throw NullPointerException in ordinary use, which is inconsistent with a stable implementation.
+
+Because your question is about whether it "can possibly" be null given the method’s intended use and invariants (not arbitrary misuse), the expression is treated as non-null there.
+    ]]></reason>
+    <value>NO</value>
+</response>
+```
+15:12:27.036 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+```xml
+<response>
+    <reason><![CDATA[
+Within the body of removeInternal, there is no explicit null check on node.prev before executing:
+
+    if (unlink) {
+      node.prev.next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null;
+    }
+
+So whether node.prev can be null depends entirely on the invariants of the Node structure and how removeInternal is called.
+
+Typical context (and strongly suggested by the code) is that Node is part of a doubly-linked list with sentinel/header nodes. In such designs:
+
+- Every "real" node in the list has non-null prev and next.
+- The ends of the list are represented by a dummy/sentinel node whose prev/next point to itself or other non-null nodes, so you never remove the sentinel with this method.
+- removeInternal is only ever called on nodes that are part of that doubly-linked list and are not the sentinel.
+
+Under that common contract:
+
+- node is always a list element that has been inserted; thus node.prev and node.next are guaranteed non-null. 
+- unlink must only be true when node is in that list, and in that situation node.prev is non-null by invariant.
+- When unlink is false, the unlink block is skipped and node.prev is never dereferenced at all.
+
+Also, recursively calling removeInternal(adjacent, false) does not affect this guarantee for the original node, because unlink=false in that recursive call prevents touching adjacent.prev/next, and the top-level call that does have unlink=true is assumed to operate on a properly linked node.
+
+Since the question is specifically “can node.prev be null at line node.prev.next = node.next;” and that line is only executed when unlink is true, the answer reduces to: “Does the overall data structure ever call removeInternal(node, true) with node.prev == null?”  
+
+Given the design pattern (doubly-linked list node with prev/next used for LRU or insertion order) and the need for correctness (a null here would be an immediate NPE and an obvious bug), the intended and required invariant is that:
+
+- removeInternal(node, true) is never invoked on a node whose prev is null.
+- A node whose prev is null (if such a state ever exists) is not passed here with unlink=true.
+
+Therefore, under the method’s expected contract and structural invariants, node.prev is not allowed to be null at that line. If it were, the code would be broken and would intermittently throw NullPointerException in ordinary use, which is inconsistent with a stable implementation.
+
+Because your question is about whether it "can possibly" be null given the method’s intended use and invariants (not arbitrary misuse), the expression is treated as non-null there.
+    ]]></reason>
+    <value>NO</value>
+</response>
+```
+15:12:27.040 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Disagreement: Within the body of removeInternal, there is no explicit null check on node.prev before executing:
+
+    if (unlink) {
+      node.prev.next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null;
+    }
+
+So whether node.prev can be null depends entirely on the invariants of the Node structure and how removeInternal is called.
+
+Typical context (and strongly suggested by the code) is that Node is part of a doubly-linked list with sentinel/header nodes. In such designs:
+
+- Every "real" node in the list has non-null prev and next.
+- The ends of the list are represented by a dummy/sentinel node whose prev/next point to itself or other non-null nodes, so you never remove the sentinel with this method.
+- removeInternal is only ever called on nodes that are part of that doubly-linked list and are not the sentinel.
+
+Under that common contract:
+
+- node is always a list element that has been inserted; thus node.prev and node.next are guaranteed non-null. 
+- unlink must only be true when node is in that list, and in that situation node.prev is non-null by invariant.
+- When unlink is false, the unlink block is skipped and node.prev is never dereferenced at all.
+
+Also, recursively calling removeInternal(adjacent, false) does not affect this guarantee for the original node, because unlink=false in that recursive call prevents touching adjacent.prev/next, and the top-level call that does have unlink=true is assumed to operate on a properly linked node.
+
+Since the question is specifically “can node.prev be null at line node.prev.next = node.next;” and that line is only executed when unlink is true, the answer reduces to: “Does the overall data structure ever call removeInternal(node, true) with node.prev == null?”  
+
+Given the design pattern (doubly-linked list node with prev/next used for LRU or insertion order) and the need for correctness (a null here would be an immediate NPE and an obvious bug), the intended and required invariant is that:
+
+- removeInternal(node, true) is never invoked on a node whose prev is null.
+- A node whose prev is null (if such a state ever exists) is not passed here with unlink=true.
+
+Therefore, under the method’s expected contract and structural invariants, node.prev is not allowed to be null at that line. If it were, the code would be broken and would intermittently throw NullPointerException in ordinary use, which is inconsistent with a stable implementation.
+
+Because your question is about whether it "can possibly" be null given the method’s intended use and invariants (not arbitrary misuse), the expression is treated as non-null there.
+15:12:27.041 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+15:12:27.041 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+False positive detected.
+15:12:27.041 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.constructCastToNonnullChange
+Constructing cast to nonnull change for reason: Within the body of removeInternal, there is no explicit null check on node.prev before executing:
+
+    if (unlink) {
+      node.prev.next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null;
+    }
+
+So whether node.prev can be null depends entirely on the invariants of the Node structure and how removeInternal is called.
+
+Typical context (and strongly suggested by the code) is that Node is part of a doubly-linked list with sentinel/header nodes. In such designs:
+
+- Every "real" node in the list has non-null prev and next.
+- The ends of the list are represented by a dummy/sentinel node whose prev/next point to itself or other non-null nodes, so you never remove the sentinel with this method.
+- removeInternal is only ever called on nodes that are part of that doubly-linked list and are not the sentinel.
+
+Under that common contract:
+
+- node is always a list element that has been inserted; thus node.prev and node.next are guaranteed non-null. 
+- unlink must only be true when node is in that list, and in that situation node.prev is non-null by invariant.
+- When unlink is false, the unlink block is skipped and node.prev is never dereferenced at all.
+
+Also, recursively calling removeInternal(adjacent, false) does not affect this guarantee for the original node, because unlink=false in that recursive call prevents touching adjacent.prev/next, and the top-level call that does have unlink=true is assumed to operate on a properly linked node.
+
+Since the question is specifically “can node.prev be null at line node.prev.next = node.next;” and that line is only executed when unlink is true, the answer reduces to: “Does the overall data structure ever call removeInternal(node, true) with node.prev == null?”  
+
+Given the design pattern (doubly-linked list node with prev/next used for LRU or insertion order) and the need for correctness (a null here would be an immediate NPE and an obvious bug), the intended and required invariant is that:
+
+- removeInternal(node, true) is never invoked on a node whose prev is null.
+- A node whose prev is null (if such a state ever exists) is not passed here with unlink=true.
+
+Therefore, under the method’s expected contract and structural invariants, node.prev is not allowed to be null at that line. If it were, the code would be broken and would intermittently throw NullPointerException in ordinary use, which is inconsistent with a stable implementation.
+
+Because your question is about whether it "can possibly" be null given the method’s intended use and invariants (not arbitrary misuse), the expression is treated as non-null there.
+15:12:27.073 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+In the method below, the expression Within the body of removeInternal, there is no explicit null check on node.prev before executing:
+
+    if (unlink) {
+      node.prev.next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null;
+    }
+
+So whether node.prev can be null depends entirely on the invariants of the Node structure and how removeInternal is called.
+
+Typical context (and strongly suggested by the code) is that Node is part of a doubly-linked list with sentinel/header nodes. In such designs:
+
+- Every "real" node in the list has non-null prev and next.
+- The ends of the list are represented by a dummy/sentinel node whose prev/next point to itself or other non-null nodes, so you never remove the sentinel with this method.
+- removeInternal is only ever called on nodes that are part of that doubly-linked list and are not the sentinel.
+
+Under that common contract:
+
+- node is always a list element that has been inserted; thus node.prev and node.next are guaranteed non-null. 
+- unlink must only be true when node is in that list, and in that situation node.prev is non-null by invariant.
+- When unlink is false, the unlink block is skipped and node.prev is never dereferenced at all.
+
+Also, recursively calling removeInternal(adjacent, false) does not affect this guarantee for the original node, because unlink=false in that recursive call prevents touching adjacent.prev/next, and the top-level call that does have unlink=true is assumed to operate on a properly linked node.
+
+Since the question is specifically “can node.prev be null at line node.prev.next = node.next;” and that line is only executed when unlink is true, the answer reduces to: “Does the overall data structure ever call removeInternal(node, true) with node.prev == null?”  
+
+Given the design pattern (doubly-linked list node with prev/next used for LRU or insertion order) and the need for correctness (a null here would be an immediate NPE and an obvious bug), the intended and required invariant is that:
+
+- removeInternal(node, true) is never invoked on a node whose prev is null.
+- A node whose prev is null (if such a state ever exists) is not passed here with unlink=true.
+
+Therefore, under the method’s expected contract and structural invariants, node.prev is not allowed to be null at that line. If it were, the code would be broken and would intermittently throw NullPointerException in ordinary use, which is inconsistent with a stable implementation.
+
+Because your question is about whether it "can possibly" be null given the method’s intended use and invariants (not arbitrary misuse), the expression is treated as non-null there. is not nullable at the point it is used.
+
+```java
+node.prev
+```
+Please rewrite the method so that at the line "void removeInternal(Node<K, V> node, boolean unlink) {
+    if (unlink) {
+      node.prev.next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null; // Help the GC (for performance)
+    }
+
+    Node<K, V> left = node.left;
+    Node<K, V> right = node.right;
+    Node<K, V> originalParent = node.parent;
+    if (left != null && right != null) {
+
+      /*
+       * To remove a node with both left and right subtrees, move an
+       * adjacent node from one of those subtrees into this node's place.
+       *
+       * Removing the adjacent node may change this node's subtrees. This
+       * node may no longer have two subtrees once the adjacent node is
+       * gone!
+       */
+
+      Node<K, V> adjacent = (left.height > right.height) ? left.last() : right.first();
+      removeInternal(adjacent, false); // takes care of rebalance and size--
+
+      int leftHeight = 0;
+      left = node.left;
+      if (left != null) {
+        leftHeight = left.height;
+        adjacent.left = left;
+        left.parent = adjacent;
+        node.left = null;
+      }
+      int rightHeight = 0;
+      right = node.right;
+      if (right != null) {
+        rightHeight = right.height;
+        adjacent.right = right;
+        right.parent = adjacent;
+        node.right = null;
+      }
+      adjacent.height = Math.max(leftHeight, rightHeight) + 1;
+      replaceInParent(node, adjacent);
+      return;
+    } else if (left != null) {
+      replaceInParent(node, left);
+      node.left = null;
+    } else if (right != null) {
+      replaceInParent(node, right);
+      node.right = null;
+    } else {
+      replaceInParent(node, null);
+    }
+
+    rebalance(originalParent, false);
+    size--;
+    modCount++;
+}", at the occurrence of: "      node.prev.next = node.next;" is replaced with `Nullability.castToNonnull(node.prev)`
+See the example below, for expression `foo.getBar()`, wrap it with `Nullability.castToNonnull(foo.getBar())`.
+
+```java
+public t(){
+    String l = foo.getBar();
+}
+```
+
+will be:
+```java
+public t(){
+    String l = Nullability.castToNonnull(foo.getBar());
+}
+```
+
+### Instructions:
+
+Do not import any additional classes.
+
+Do not add Java comments.
+
+Only modify relevant lines as required.
+
+Return only the modified method wrapped in the XML format shown below.
+
+Place the Java code inside the <code> tag using a CDATA block with ```java formatting.
+
+Just give me the fixed code snippet in XML format in <response> tag like the example below. I will apply the fix to my codebase. Do not import any additional libraries or classes or add java comments. If you can provide the fixed code snippet, please provide it in the following format and place the code snippet in the <code> tag within ```java block.
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  Your fixed code snippet here
+  ```
+    ]]>
+  </code>
+</response>
+
+15:12:27.075 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+15:12:31.111 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  void removeInternal(Node<K, V> node, boolean unlink) {
+    if (unlink) {
+      Nullability.castToNonnull(node.prev).next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null;
+    }
+
+    Node<K, V> left = node.left;
+    Node<K, V> right = node.right;
+    Node<K, V> originalParent = node.parent;
+    if (left != null && right != null) {
+
+      Node<K, V> adjacent = (left.height > right.height) ? left.last() : right.first();
+      removeInternal(adjacent, false);
+
+      int leftHeight = 0;
+      left = node.left;
+      if (left != null) {
+        leftHeight = left.height;
+        adjacent.left = left;
+        left.parent = adjacent;
+        node.left = null;
+      }
+      int rightHeight = 0;
+      right = node.right;
+      if (right != null) {
+        rightHeight = right.height;
+        adjacent.right = right;
+        right.parent = adjacent;
+        node.right = null;
+      }
+      adjacent.height = Math.max(leftHeight, rightHeight) + 1;
+      replaceInParent(node, adjacent);
+      return;
+    } else if (left != null) {
+      replaceInParent(node, left);
+      node.left = null;
+    } else if (right != null) {
+      replaceInParent(node, right);
+      node.right = null;
+    } else {
+      replaceInParent(node, null);
+    }
+
+    rebalance(originalParent, false);
+    size--;
+    modCount++;
+  }
+  ```
+    ]]>
+  </code>
+</response>
+15:12:31.116 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  void removeInternal(Node<K, V> node, boolean unlink) {
+    if (unlink) {
+      Nullability.castToNonnull(node.prev).next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null;
+    }
+
+    Node<K, V> left = node.left;
+    Node<K, V> right = node.right;
+    Node<K, V> originalParent = node.parent;
+    if (left != null && right != null) {
+
+      Node<K, V> adjacent = (left.height > right.height) ? left.last() : right.first();
+      removeInternal(adjacent, false);
+
+      int leftHeight = 0;
+      left = node.left;
+      if (left != null) {
+        leftHeight = left.height;
+        adjacent.left = left;
+        left.parent = adjacent;
+        node.left = null;
+      }
+      int rightHeight = 0;
+      right = node.right;
+      if (right != null) {
+        rightHeight = right.height;
+        adjacent.right = right;
+        right.parent = adjacent;
+        node.right = null;
+      }
+      adjacent.height = Math.max(leftHeight, rightHeight) + 1;
+      replaceInParent(node, adjacent);
+      return;
+    } else if (left != null) {
+      replaceInParent(node, left);
+      node.left = null;
+    } else if (right != null) {
+      replaceInParent(node, right);
+      node.right = null;
+    } else {
+      replaceInParent(node, null);
+    }
+
+    rebalance(originalParent, false);
+    size--;
+    modCount++;
+  }
+  ```
+    ]]>
+  </code>
+</response>
+15:12:31.120 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+void removeInternal(Node<K, V> node, boolean unlink) {
+    if (unlink) {
+      Nullability.castToNonnull(node.prev).next = node.next;
+      node.next.prev = node.prev;
+      node.next = node.prev = null;
+    }
+
+    Node<K, V> left = node.left;
+    Node<K, V> right = node.right;
+    Node<K, V> originalParent = node.parent;
+    if (left != null && right != null) {
+
+      Node<K, V> adjacent = (left.height > right.height) ? left.last() : right.first();
+      removeInternal(adjacent, false);
+
+      int leftHeight = 0;
+      left = node.left;
+      if (left != null) {
+        leftHeight = left.height;
+        adjacent.left = left;
+        left.parent = adjacent;
+        node.left = null;
+      }
+      int rightHeight = 0;
+      right = node.right;
+      if (right != null) {
+        rightHeight = right.height;
+        adjacent.right = right;
+        right.parent = adjacent;
+        node.right = null;
+      }
+      adjacent.height = Math.max(leftHeight, rightHeight) + 1;
+      replaceInParent(node, adjacent);
+      return;
+    } else if (left != null) {
+      replaceInParent(node, left);
+      node.left = null;
+    } else if (right != null) {
+      replaceInParent(node, right);
+      node.right = null;
+    } else {
+      replaceInParent(node, null);
+    }
+
+    rebalance(originalParent, false);
+    size--;
+    modCount++;
+  }
+15:12:31.121 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+15:12:31.122 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.fixDereferenceByAddingCastToNonnull
+Fixing the error by adding castToNonnull

@@ -1,0 +1,726 @@
+====================
+Type='DEREFERENCE_NULLABLE', message='dereferenced expression resolvedParams.get("name") is @Nullable'
+/home/vscode/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/SubWorkflowTaskMapper.java:66
+        String subWorkflowName = resolvedParams.get("name").toString();
+Log:
+14:30:07.479 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+==============================
+14:30:07.480 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.COUNT = 2
+14:30:07.480 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.PROMPTS SIZE = 2
+14:30:07.480 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT TOKENS USAGE: Token usage - Uncached Prompt: 713, Cached Prompt: 0, Completion: 531, Total: 1244
+14:30:07.481 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+ChatGPT usage reset
+14:30:07.481 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+3 : TOP LEVEL CALL TO FIX ERROR: Type='DEREFERENCE_NULLABLE', message='dereferenced expression resolvedParams.get("name") is @Nullable'
+/home/vscode/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/SubWorkflowTaskMapper.java:66
+        String subWorkflowName = resolvedParams.get("name").toString();
+14:30:14.697 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.fix
+Fixing error: Type='DEREFERENCE_NULLABLE', message='dereferenced expression resolvedParams.get("name") is @Nullable'
+/home/vscode/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/SubWorkflowTaskMapper.java:66
+        String subWorkflowName = resolvedParams.get("name").toString();
+14:30:14.698 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Resolving dereference error: Type='DEREFERENCE_NULLABLE', message='dereferenced expression resolvedParams.get("name") is @Nullable'
+/home/vscode/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/SubWorkflowTaskMapper.java:66
+        String subWorkflowName = resolvedParams.get("name").toString();
+14:30:14.698 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Checking nullability possibility at error point
+14:30:14.704 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkNullabilityPossibilityAtErrorPoint
+Asking if the expression can be null at error point point
+14:30:14.704 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the expression "resolvedParams.get("name")" at line "String subWorkflowName = resolvedParams.get("name").toString();" can possibly be null in the method below.
+
+**Method:**
+@SuppressWarnings("rawtypes")
+    @Override
+    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+        LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
+        WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
+        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+        String taskId = taskMapperContext.getTaskId();
+        // Check if there are sub workflow parameters, if not throw an exception, cannot initiate a
+        // sub-workflow without workflow params
+        SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+
+        Map<String, Object> resolvedParams =
+                getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+
+        String subWorkflowName = resolvedParams.get("name").toString();
+        Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+
+        Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+
+        Map subWorkflowTaskToDomain = null;
+        Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+        if (uncheckedTaskToDomain instanceof Map) {
+            subWorkflowTaskToDomain = (Map) uncheckedTaskToDomain;
+        }
+
+        TaskModel subWorkflowTask = taskMapperContext.createTaskModel();
+        subWorkflowTask.setTaskType(TASK_TYPE_SUB_WORKFLOW);
+        subWorkflowTask.addInput("subWorkflowName", subWorkflowName);
+        subWorkflowTask.addInput("subWorkflowVersion", subWorkflowVersion);
+        subWorkflowTask.addInput("subWorkflowTaskToDomain", subWorkflowTaskToDomain);
+        subWorkflowTask.addInput("subWorkflowDefinition", subWorkflowDefinition);
+        subWorkflowTask.addInput("workflowInput", taskMapperContext.getTaskInput());
+        subWorkflowTask.setStatus(TaskModel.Status.SCHEDULED);
+        subWorkflowTask.setCallbackAfterSeconds(workflowTask.getStartDelay());
+        LOGGER.debug("SubWorkflowTask {} created to be Scheduled", subWorkflowTask);
+        return List.of(subWorkflowTask);
+}
+
+### Analysis Requirements:
+- Examine all code paths leading to the expression
+- Consider variable assignments, method return values, and control flow
+- Look for null checks, initializations, and guarantees from prior operations
+- Consider the semantics and contracts of called methods
+
+### Response Format:
+
+**If the expression CAN be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>YES</value>
+</response>
+```
+
+**If the expression CANNOT be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>NO</value>
+</response>
+```
+
+**If you need more information to make a determination:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>UNKNOWN</value>
+    <!-- Include <requests> only if additional information is needed -->
+    <requests>
+        <request><![CDATA[YOUR REQUEST 1]]></request>
+        <request><![CDATA[YOUR REQUEST 2]]></request>
+    </requests>
+</response>
+```
+14:30:14.705 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+14:30:26.280 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+<response>
+    <reason><![CDATA[
+From the provided method body alone, there is no explicit guarantee that `resolvedParams.get("name")` is non‑null:
+
+- `resolvedParams` is initialized as:
+  ```java
+  Map<String, Object> resolvedParams =
+          getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+  ```
+  We are not shown the implementation or contract of `getSubWorkflowInputParameters`. Therefore:
+  - We do not know if it guarantees:
+    - a non-null `Map`, and
+    - the presence of the key `"name"` with a non-null value.
+
+- The subsequent line:
+  ```java
+  String subWorkflowName = resolvedParams.get("name").toString();
+  ```
+  performs no null check. If `resolvedParams.get("name")` is `null`, this will throw a `NullPointerException`.
+
+- The method earlier calls:
+  ```java
+  SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+  ```
+  and checks:
+  ```java
+  // Check if there are sub workflow parameters ...
+  SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+  ```
+  but we do not see any logic here that enforces that those parameters must include a `"name"` field, nor that `getSubWorkflowInputParameters` transforms them into a map entry `"name"` with a non-null value.
+
+- The rest of the code:
+  ```java
+  Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+  Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+  Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+  ```
+  also does not impose any constraints ensuring `"name"` is non-null before it is dereferenced.
+
+Without the implementations or documented contracts of:
+- `getSubWorkflowInputParameters(WorkflowModel, SubWorkflowParams)`, and
+- `getSubWorkflowParams(WorkflowTask)`, and any higher-level guarantees (e.g., "sub workflow params must always include a non-null `name`"),
+
+we cannot prove that `resolvedParams.get("name")` cannot be null. It is possible in normal Java semantics for:
+- `resolvedParams` to be non-null but not contain `"name"`, or
+- contain `"name"` mapped to a null value.
+
+Thus, based solely on the shown code, `resolvedParams.get("name")` *can* be null, and the call to `toString()` is a potential NPE source unless external invariants (not shown) rule that case out.
+    ]]></reason>
+    <value>UNKNOWN</value>
+    <requests>
+        <request><![CDATA[Provide the implementation or documented contract of getSubWorkflowInputParameters(WorkflowModel, SubWorkflowParams).]]></request>
+        <request><![CDATA[Provide the implementation or documented contract of getSubWorkflowParams(WorkflowTask), or any specification stating that sub-workflow parameters must include a non-null "name".]]></request>
+    </requests>
+</response>
+14:30:26.289 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+    <reason><![CDATA[
+From the provided method body alone, there is no explicit guarantee that `resolvedParams.get("name")` is non‑null:
+
+- `resolvedParams` is initialized as:
+  ```java
+  Map<String, Object> resolvedParams =
+          getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+  ```
+  We are not shown the implementation or contract of `getSubWorkflowInputParameters`. Therefore:
+  - We do not know if it guarantees:
+    - a non-null `Map`, and
+    - the presence of the key `"name"` with a non-null value.
+
+- The subsequent line:
+  ```java
+  String subWorkflowName = resolvedParams.get("name").toString();
+  ```
+  performs no null check. If `resolvedParams.get("name")` is `null`, this will throw a `NullPointerException`.
+
+- The method earlier calls:
+  ```java
+  SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+  ```
+  and checks:
+  ```java
+  // Check if there are sub workflow parameters ...
+  SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+  ```
+  but we do not see any logic here that enforces that those parameters must include a `"name"` field, nor that `getSubWorkflowInputParameters` transforms them into a map entry `"name"` with a non-null value.
+
+- The rest of the code:
+  ```java
+  Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+  Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+  Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+  ```
+  also does not impose any constraints ensuring `"name"` is non-null before it is dereferenced.
+
+Without the implementations or documented contracts of:
+- `getSubWorkflowInputParameters(WorkflowModel, SubWorkflowParams)`, and
+- `getSubWorkflowParams(WorkflowTask)`, and any higher-level guarantees (e.g., "sub workflow params must always include a non-null `name`"),
+
+we cannot prove that `resolvedParams.get("name")` cannot be null. It is possible in normal Java semantics for:
+- `resolvedParams` to be non-null but not contain `"name"`, or
+- contain `"name"` mapped to a null value.
+
+Thus, based solely on the shown code, `resolvedParams.get("name")` *can* be null, and the call to `toString()` is a potential NPE source unless external invariants (not shown) rule that case out.
+    ]]></reason>
+    <value>UNKNOWN</value>
+    <requests>
+        <request><![CDATA[Provide the implementation or documented contract of getSubWorkflowInputParameters(WorkflowModel, SubWorkflowParams).]]></request>
+        <request><![CDATA[Provide the implementation or documented contract of getSubWorkflowParams(WorkflowTask), or any specification stating that sub-workflow parameters must include a non-null "name".]]></request>
+    </requests>
+</response>
+14:30:26.302 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Unknown: From the provided method body alone, there is no explicit guarantee that `resolvedParams.get("name")` is non‑null:
+
+- `resolvedParams` is initialized as:
+  ```java
+  Map<String, Object> resolvedParams =
+          getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+  ```
+  We are not shown the implementation or contract of `getSubWorkflowInputParameters`. Therefore:
+  - We do not know if it guarantees:
+    - a non-null `Map`, and
+    - the presence of the key `"name"` with a non-null value.
+
+- The subsequent line:
+  ```java
+  String subWorkflowName = resolvedParams.get("name").toString();
+  ```
+  performs no null check. If `resolvedParams.get("name")` is `null`, this will throw a `NullPointerException`.
+
+- The method earlier calls:
+  ```java
+  SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+  ```
+  and checks:
+  ```java
+  // Check if there are sub workflow parameters ...
+  SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+  ```
+  but we do not see any logic here that enforces that those parameters must include a `"name"` field, nor that `getSubWorkflowInputParameters` transforms them into a map entry `"name"` with a non-null value.
+
+- The rest of the code:
+  ```java
+  Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+  Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+  Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+  ```
+  also does not impose any constraints ensuring `"name"` is non-null before it is dereferenced.
+
+Without the implementations or documented contracts of:
+- `getSubWorkflowInputParameters(WorkflowModel, SubWorkflowParams)`, and
+- `getSubWorkflowParams(WorkflowTask)`, and any higher-level guarantees (e.g., "sub workflow params must always include a non-null `name`"),
+
+we cannot prove that `resolvedParams.get("name")` cannot be null. It is possible in normal Java semantics for:
+- `resolvedParams` to be non-null but not contain `"name"`, or
+- contain `"name"` mapped to a null value.
+
+Thus, based solely on the shown code, `resolvedParams.get("name")` *can* be null, and the call to `toString()` is a potential NPE source unless external invariants (not shown) rule that case out.
+14:30:26.304 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+14:30:26.315 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveMethodDereferenceError
+Resolving method dereference error.
+14:30:26.316 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkIfMethodIsReturningNullableOnCallSite
+Asking if the method is returning nullable on the call site: resolvedParams.get("name")
+14:30:26.332 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the method below can return null **at the specific call site provided**.
+
+**Method:**
+```java
+@SuppressWarnings("rawtypes")
+    @Override
+    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+        LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
+        WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
+        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+        String taskId = taskMapperContext.getTaskId();
+        // Check if there are sub workflow parameters, if not throw an exception, cannot initiate a
+        // sub-workflow without workflow params
+        SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+
+        Map<String, Object> resolvedParams =
+                getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+
+        String subWorkflowName = resolvedParams.get("name").toString();
+        Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+
+        Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+
+        Map subWorkflowTaskToDomain = null;
+        Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+        if (uncheckedTaskToDomain instanceof Map) {
+            subWorkflowTaskToDomain = (Map) uncheckedTaskToDomain;
+        }
+
+        TaskModel subWorkflowTask = taskMapperContext.createTaskModel();
+        subWorkflowTask.setTaskType(TASK_TYPE_SUB_WORKFLOW);
+        subWorkflowTask.addInput("subWorkflowName", subWorkflowName);
+        subWorkflowTask.addInput("subWorkflowVersion", subWorkflowVersion);
+        subWorkflowTask.addInput("subWorkflowTaskToDomain", subWorkflowTaskToDomain);
+        subWorkflowTask.addInput("subWorkflowDefinition", subWorkflowDefinition);
+        subWorkflowTask.addInput("workflowInput", taskMapperContext.getTaskInput());
+        subWorkflowTask.setStatus(TaskModel.Status.SCHEDULED);
+        subWorkflowTask.setCallbackAfterSeconds(workflowTask.getStartDelay());
+        LOGGER.debug("SubWorkflowTask {} created to be Scheduled", subWorkflowTask);
+        return List.of(subWorkflowTask);
+}
+```
+
+### Analysis Guidelines:
+- **Analyze only this specific call site**, not all possible invocations of the method
+- Consider all return paths within the method
+- If the method calls other methods, do not assume their return values unless their full declarations are provided
+- Exception paths should not be considered null returns (exceptions are not null values)
+- If the method's return value depends on a parameter, evaluate based on the actual argument passed at this call site
+- Request declarations of any methods whose return values directly or indirectly impact this method's return value
+
+### call site:
+resolvedParams.get("name")
+
+**Call chain and method definitions:**
+The following shows the call chain and relevant method definitions:
+
+Depth: 0
+```java
+class com.netflix.conductor.core.execution.mapper.SubWorkflowTaskMapper {
+@SuppressWarnings("rawtypes")
+    @Override
+    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+        LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
+        WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
+        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+        String taskId = taskMapperContext.getTaskId();
+        // Check if there are sub workflow parameters, if not throw an exception, cannot initiate a
+        // sub-workflow without workflow params
+        SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+
+        Map<String, Object> resolvedParams =
+                getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+
+        String subWorkflowName = resolvedParams.get("name").toString();
+        Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+
+        Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+
+        Map subWorkflowTaskToDomain = null;
+        Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+        if (uncheckedTaskToDomain instanceof Map) {
+            subWorkflowTaskToDomain = (Map) uncheckedTaskToDomain;
+        }
+
+        TaskModel subWorkflowTask = taskMapperContext.createTaskModel();
+        subWorkflowTask.setTaskType(TASK_TYPE_SUB_WORKFLOW);
+        subWorkflowTask.addInput("subWorkflowName", subWorkflowName);
+        subWorkflowTask.addInput("subWorkflowVersion", subWorkflowVersion);
+        subWorkflowTask.addInput("subWorkflowTaskToDomain", subWorkflowTaskToDomain);
+        subWorkflowTask.addInput("subWorkflowDefinition", subWorkflowDefinition);
+        subWorkflowTask.addInput("workflowInput", taskMapperContext.getTaskInput());
+        subWorkflowTask.setStatus(TaskModel.Status.SCHEDULED);
+        subWorkflowTask.setCallbackAfterSeconds(workflowTask.getStartDelay());
+        LOGGER.debug("SubWorkflowTask {} created to be Scheduled", subWorkflowTask);
+        return List.of(subWorkflowTask);
+}
+}
+```
+
+
+### Response Format:
+
+**If the method CANNOT return null at this specific call site:**
+```xml
+<response>
+  <reason><![CDATA[EXPLAIN WHY THE INVOCATION resolvedParams.get("name") RESULT CANNOT BE NULL.]]></reason>
+  <value>NO</value>
+</response>
+```
+
+**If the method CAN return null at this specific call site:**
+```xml
+<response>
+  <reason><![CDATA[EXPLAIN WHY THE INVOCATION resolvedParams.get("name") RESULT CAN BE NULL.]]></reason>
+  <value>YES</value>
+</response>
+```
+
+**If you need declarations of other methods to make a determination:**
+```xml
+<response>
+  <reason><![CDATA[Explain why you need these method declarations to make a confident decision]]></reason>
+  <success>false</success>
+  <methods>
+    <method>methodName</method>
+  </methods>
+</response>
+```
+
+### Important Notes:
+- Be precise and specific in your reasoning
+- If the method's return value depends on another method not provided, request its declaration
+- If the method can return null in some cases but not this one, explain why this specific invocation is different
+
+14:30:26.334 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+14:30:32.983 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+<response>
+  <reason><![CDATA[
+The value returned by `resolvedParams.get("name")` depends entirely on the contents of the `resolvedParams` map, which is produced by the call:
+
+```java
+Map<String, Object> resolvedParams =
+        getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+```
+
+From the provided code:
+
+- There is no check that `"name"` is present in `resolvedParams`.
+- There is no check that `resolvedParams.get("name")` is non‑null before invoking `.toString()` on it.
+- The behavior and contract of `getSubWorkflowInputParameters` are not shown, so we cannot assume it always:
+  - Sets a mapping for key `"name"`, or
+  - Ensures that the corresponding value is never `null`.
+
+Under normal Java `Map` semantics, `Map.get(key)` returns `null` when the key is absent or explicitly mapped to `null`. Since nothing in this method enforces that `"name"` must exist or be non‑null in `resolvedParams`, and we lack the implementation of `getSubWorkflowInputParameters` to say otherwise, the call:
+
+```java
+resolvedParams.get("name")
+```
+
+**can** evaluate to `null`. (If it does, the subsequent `.toString()` will throw a `NullPointerException`, but the question here is only whether the `get` call can return `null,` not whether the method throws or handles it.)
+
+Therefore, at this call site, `resolvedParams.get("name")` can be `null`.
+  ]]></reason>
+  <value>YES</value>
+</response>
+14:30:32.988 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+  <reason><![CDATA[
+The value returned by `resolvedParams.get("name")` depends entirely on the contents of the `resolvedParams` map, which is produced by the call:
+
+```java
+Map<String, Object> resolvedParams =
+        getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+```
+
+From the provided code:
+
+- There is no check that `"name"` is present in `resolvedParams`.
+- There is no check that `resolvedParams.get("name")` is non‑null before invoking `.toString()` on it.
+- The behavior and contract of `getSubWorkflowInputParameters` are not shown, so we cannot assume it always:
+  - Sets a mapping for key `"name"`, or
+  - Ensures that the corresponding value is never `null`.
+
+Under normal Java `Map` semantics, `Map.get(key)` returns `null` when the key is absent or explicitly mapped to `null`. Since nothing in this method enforces that `"name"` must exist or be non‑null in `resolvedParams`, and we lack the implementation of `getSubWorkflowInputParameters` to say otherwise, the call:
+
+```java
+resolvedParams.get("name")
+```
+
+**can** evaluate to `null`. (If it does, the subsequent `.toString()` will throw a `NullPointerException`, but the question here is only whether the `get` call can return `null,` not whether the method throws or handles it.)
+
+Therefore, at this call site, `resolvedParams.get("name")` can be `null`.
+  ]]></reason>
+  <value>YES</value>
+</response>
+14:30:32.996 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Agreement: The value returned by `resolvedParams.get("name")` depends entirely on the contents of the `resolvedParams` map, which is produced by the call:
+
+```java
+Map<String, Object> resolvedParams =
+        getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+```
+
+From the provided code:
+
+- There is no check that `"name"` is present in `resolvedParams`.
+- There is no check that `resolvedParams.get("name")` is non‑null before invoking `.toString()` on it.
+- The behavior and contract of `getSubWorkflowInputParameters` are not shown, so we cannot assume it always:
+  - Sets a mapping for key `"name"`, or
+  - Ensures that the corresponding value is never `null`.
+
+Under normal Java `Map` semantics, `Map.get(key)` returns `null` when the key is absent or explicitly mapped to `null`. Since nothing in this method enforces that `"name"` must exist or be non‑null in `resolvedParams`, and we lack the implementation of `getSubWorkflowInputParameters` to say otherwise, the call:
+
+```java
+resolvedParams.get("name")
+```
+
+**can** evaluate to `null`. (If it does, the subsequent `.toString()` will throw a `NullPointerException`, but the question here is only whether the `get` call can return `null,` not whether the method throws or handles it.)
+
+Therefore, at this call site, `resolvedParams.get("name")` can be `null`.
+14:30:32.997 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+14:30:32.998 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveRemainingErrors
+Resolving remaining cast to nonnull
+14:30:33.007 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+In the method below, the expression resolvedParams.get("name") is not nullable at the point it is used.
+
+```java
+@SuppressWarnings("rawtypes")
+    @Override
+    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+        LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
+        WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
+        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+        String taskId = taskMapperContext.getTaskId();
+        // Check if there are sub workflow parameters, if not throw an exception, cannot initiate a
+        // sub-workflow without workflow params
+        SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+
+        Map<String, Object> resolvedParams =
+                getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+
+        String subWorkflowName = resolvedParams.get("name").toString();
+        Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+
+        Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+
+        Map subWorkflowTaskToDomain = null;
+        Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+        if (uncheckedTaskToDomain instanceof Map) {
+            subWorkflowTaskToDomain = (Map) uncheckedTaskToDomain;
+        }
+
+        TaskModel subWorkflowTask = taskMapperContext.createTaskModel();
+        subWorkflowTask.setTaskType(TASK_TYPE_SUB_WORKFLOW);
+        subWorkflowTask.addInput("subWorkflowName", subWorkflowName);
+        subWorkflowTask.addInput("subWorkflowVersion", subWorkflowVersion);
+        subWorkflowTask.addInput("subWorkflowTaskToDomain", subWorkflowTaskToDomain);
+        subWorkflowTask.addInput("subWorkflowDefinition", subWorkflowDefinition);
+        subWorkflowTask.addInput("workflowInput", taskMapperContext.getTaskInput());
+        subWorkflowTask.setStatus(TaskModel.Status.SCHEDULED);
+        subWorkflowTask.setCallbackAfterSeconds(workflowTask.getStartDelay());
+        LOGGER.debug("SubWorkflowTask {} created to be Scheduled", subWorkflowTask);
+        return List.of(subWorkflowTask);
+}
+```
+Please rewrite the method so that at the line "        String subWorkflowName = resolvedParams.get("name").toString();", at the occurrence of: "resolvedParams.get("name")" is replaced with `Nullability.castToNonnull(resolvedParams.get("name"))`
+See the example below, for expression `foo.getBar()`, wrap it with `Nullability.castToNonnull(foo.getBar())`.
+
+```java
+public t(){
+    String l = foo.getBar();
+}
+```
+
+will be:
+```java
+public t(){
+    String l = Nullability.castToNonnull(foo.getBar());
+}
+```
+
+### Instructions:
+
+Do not import any additional classes.
+
+Do not add Java comments.
+
+Only modify relevant lines as required.
+
+Return only the modified method wrapped in the XML format shown below.
+
+Place the Java code inside the <code> tag using a CDATA block with ```java formatting.
+
+Just give me the fixed code snippet in XML format in <response> tag like the example below. I will apply the fix to my codebase. Do not import any additional libraries or classes or add java comments. If you can provide the fixed code snippet, please provide it in the following format and place the code snippet in the <code> tag within ```java block.
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  Your fixed code snippet here
+  ```
+    ]]>
+  </code>
+</response>
+
+14:30:33.008 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+14:30:37.334 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  @SuppressWarnings("rawtypes")
+    @Override
+    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+        LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
+        WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
+        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+        String taskId = taskMapperContext.getTaskId();
+        SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+
+        Map<String, Object> resolvedParams =
+                getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+
+        String subWorkflowName = Nullability.castToNonnull(resolvedParams.get("name")).toString();
+        Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+
+        Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+
+        Map subWorkflowTaskToDomain = null;
+        Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+        if (uncheckedTaskToDomain instanceof Map) {
+            subWorkflowTaskToDomain = (Map) uncheckedTaskToDomain;
+        }
+
+        TaskModel subWorkflowTask = taskMapperContext.createTaskModel();
+        subWorkflowTask.setTaskType(TASK_TYPE_SUB_WORKFLOW);
+        subWorkflowTask.addInput("subWorkflowName", subWorkflowName);
+        subWorkflowTask.addInput("subWorkflowVersion", subWorkflowVersion);
+        subWorkflowTask.addInput("subWorkflowTaskToDomain", subWorkflowTaskToDomain);
+        subWorkflowTask.addInput("subWorkflowDefinition", subWorkflowDefinition);
+        subWorkflowTask.addInput("workflowInput", taskMapperContext.getTaskInput());
+        subWorkflowTask.setStatus(TaskModel.Status.SCHEDULED);
+        subWorkflowTask.setCallbackAfterSeconds(workflowTask.getStartDelay());
+        LOGGER.debug("SubWorkflowTask {} created to be Scheduled", subWorkflowTask);
+        return List.of(subWorkflowTask);
+}
+  ```
+    ]]>
+  </code>
+</response>
+14:30:37.345 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  @SuppressWarnings("rawtypes")
+    @Override
+    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+        LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
+        WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
+        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+        String taskId = taskMapperContext.getTaskId();
+        SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+
+        Map<String, Object> resolvedParams =
+                getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+
+        String subWorkflowName = Nullability.castToNonnull(resolvedParams.get("name")).toString();
+        Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+
+        Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+
+        Map subWorkflowTaskToDomain = null;
+        Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+        if (uncheckedTaskToDomain instanceof Map) {
+            subWorkflowTaskToDomain = (Map) uncheckedTaskToDomain;
+        }
+
+        TaskModel subWorkflowTask = taskMapperContext.createTaskModel();
+        subWorkflowTask.setTaskType(TASK_TYPE_SUB_WORKFLOW);
+        subWorkflowTask.addInput("subWorkflowName", subWorkflowName);
+        subWorkflowTask.addInput("subWorkflowVersion", subWorkflowVersion);
+        subWorkflowTask.addInput("subWorkflowTaskToDomain", subWorkflowTaskToDomain);
+        subWorkflowTask.addInput("subWorkflowDefinition", subWorkflowDefinition);
+        subWorkflowTask.addInput("workflowInput", taskMapperContext.getTaskInput());
+        subWorkflowTask.setStatus(TaskModel.Status.SCHEDULED);
+        subWorkflowTask.setCallbackAfterSeconds(workflowTask.getStartDelay());
+        LOGGER.debug("SubWorkflowTask {} created to be Scheduled", subWorkflowTask);
+        return List.of(subWorkflowTask);
+}
+  ```
+    ]]>
+  </code>
+</response>
+14:30:37.355 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+@SuppressWarnings("rawtypes")
+    @Override
+    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+        LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
+        WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
+        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+        String taskId = taskMapperContext.getTaskId();
+        SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
+
+        Map<String, Object> resolvedParams =
+                getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
+
+        String subWorkflowName = Nullability.castToNonnull(resolvedParams.get("name")).toString();
+        Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
+
+        Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
+
+        Map subWorkflowTaskToDomain = null;
+        Object uncheckedTaskToDomain = resolvedParams.get("taskToDomain");
+        if (uncheckedTaskToDomain instanceof Map) {
+            subWorkflowTaskToDomain = (Map) uncheckedTaskToDomain;
+        }
+
+        TaskModel subWorkflowTask = taskMapperContext.createTaskModel();
+        subWorkflowTask.setTaskType(TASK_TYPE_SUB_WORKFLOW);
+        subWorkflowTask.addInput("subWorkflowName", subWorkflowName);
+        subWorkflowTask.addInput("subWorkflowVersion", subWorkflowVersion);
+        subWorkflowTask.addInput("subWorkflowTaskToDomain", subWorkflowTaskToDomain);
+        subWorkflowTask.addInput("subWorkflowDefinition", subWorkflowDefinition);
+        subWorkflowTask.addInput("workflowInput", taskMapperContext.getTaskInput());
+        subWorkflowTask.setStatus(TaskModel.Status.SCHEDULED);
+        subWorkflowTask.setCallbackAfterSeconds(workflowTask.getStartDelay());
+        LOGGER.debug("SubWorkflowTask {} created to be Scheduled", subWorkflowTask);
+        return List.of(subWorkflowTask);
+}
+14:30:37.355 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+14:30:37.356 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.fixDereferenceByRemainingCastToNonnull
+Fixing the error by adding castToNonnull
