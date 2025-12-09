@@ -1,0 +1,699 @@
+====================
+Type='DEREFERENCE_NULLABLE', message='enhanced-for expression joinOn is @Nullable'
+/home/vscode/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/ExclusiveJoin.java:59
+        for (String joinOnRef : joinOn) {
+Log:
+14:06:20.460 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+==============================
+14:06:20.461 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.COUNT = 2
+14:06:20.461 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.PROMPTS SIZE = 2
+14:06:20.461 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT TOKENS USAGE: Token usage - Uncached Prompt: 1042, Cached Prompt: 0, Completion: 746, Total: 1788
+14:06:20.461 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+ChatGPT usage reset
+14:06:20.461 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+9 : TOP LEVEL CALL TO FIX ERROR: Type='DEREFERENCE_NULLABLE', message='enhanced-for expression joinOn is @Nullable'
+/home/vscode/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/ExclusiveJoin.java:59
+        for (String joinOnRef : joinOn) {
+14:06:27.883 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.fix
+Fixing error: Type='DEREFERENCE_NULLABLE', message='enhanced-for expression joinOn is @Nullable'
+/home/vscode/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/ExclusiveJoin.java:59
+        for (String joinOnRef : joinOn) {
+14:06:27.883 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Resolving dereference error: Type='DEREFERENCE_NULLABLE', message='enhanced-for expression joinOn is @Nullable'
+/home/vscode/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/ExclusiveJoin.java:59
+        for (String joinOnRef : joinOn) {
+14:06:27.884 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Checking nullability possibility at error point
+14:06:27.892 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkNullabilityPossibilityAtErrorPoint
+Asking if the expression can be null at error point point
+14:06:27.892 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the expression "joinOn" at line "for (String joinOnRef : joinOn) {" can possibly be null in the method below.
+
+**Method:**
+@Override
+    @SuppressWarnings("unchecked")
+    public boolean execute(
+            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+
+        boolean foundExlusiveJoinOnTask = false;
+        boolean hasFailures = false;
+        StringBuilder failureReason = new StringBuilder();
+        TaskModel.Status taskStatus;
+        List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+        if (task.isLoopOverTask()) {
+            // If exclusive join is part of loop over task, wait for specific iteration to get
+            // complete
+            joinOn =
+                    joinOn.stream()
+                            .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                            .collect(Collectors.toList());
+        }
+        TaskModel exclusiveTask = null;
+        for (String joinOnRef : joinOn) {
+            LOGGER.debug("Exclusive Join On Task {} ", joinOnRef);
+            exclusiveTask = workflow.getTaskByRefName(joinOnRef);
+            if (exclusiveTask == null || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                LOGGER.debug("The task {} is either not scheduled or skipped.", joinOnRef);
+                continue;
+            }
+            taskStatus = exclusiveTask.getStatus();
+            foundExlusiveJoinOnTask = taskStatus.isTerminal();
+            hasFailures = !taskStatus.isSuccessful();
+            if (hasFailures) {
+                failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+            }
+
+            break;
+        }
+
+        if (!foundExlusiveJoinOnTask) {
+            List<String> defaultExclusiveJoinTasks =
+                    (List<String>) task.getInputData().get(DEFAULT_EXCLUSIVE_JOIN_TASKS);
+            LOGGER.info(
+                    "Could not perform exclusive on Join Task(s). Performing now on default exclusive join task(s) {}, workflow: {}",
+                    defaultExclusiveJoinTasks,
+                    workflow.getWorkflowId());
+            if (defaultExclusiveJoinTasks != null && !defaultExclusiveJoinTasks.isEmpty()) {
+                for (String defaultExclusiveJoinTask : defaultExclusiveJoinTasks) {
+                    // Pick the first task that we should join on and break.
+                    exclusiveTask = workflow.getTaskByRefName(defaultExclusiveJoinTask);
+                    if (exclusiveTask == null
+                            || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                        LOGGER.debug(
+                                "The task {} is either not scheduled or skipped.",
+                                defaultExclusiveJoinTask);
+                        continue;
+                    }
+
+                    taskStatus = exclusiveTask.getStatus();
+                    foundExlusiveJoinOnTask = taskStatus.isTerminal();
+                    hasFailures = !taskStatus.isSuccessful();
+                    if (hasFailures) {
+                        failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+                    }
+                    break;
+                }
+            } else {
+                LOGGER.debug(
+                        "Could not evaluate last tasks output. Verify the task configuration in the workflow definition.");
+            }
+        }
+
+        LOGGER.debug(
+                "Status of flags: foundExlusiveJoinOnTask: {}, hasFailures {}",
+                foundExlusiveJoinOnTask,
+                hasFailures);
+        if (foundExlusiveJoinOnTask || hasFailures) {
+            if (hasFailures) {
+                task.setReasonForIncompletion(failureReason.toString());
+                task.setStatus(TaskModel.Status.FAILED);
+            } else {
+                task.setOutputData(exclusiveTask.getOutputData());
+                task.setStatus(TaskModel.Status.COMPLETED);
+            }
+            LOGGER.debug("Task: {} status is: {}", task.getTaskId(), task.getStatus());
+            return true;
+        }
+        return false;
+}
+
+### Analysis Requirements:
+- Examine all code paths leading to the expression
+- Consider variable assignments, method return values, and control flow
+- Look for null checks, initializations, and guarantees from prior operations
+- Consider the semantics and contracts of called methods
+
+### Response Format:
+
+**If the expression CAN be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>YES</value>
+</response>
+```
+
+**If the expression CANNOT be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>NO</value>
+</response>
+```
+
+**If you need more information to make a determination:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>UNKNOWN</value>
+    <!-- Include <requests> only if additional information is needed -->
+    <requests>
+        <request><![CDATA[YOUR REQUEST 1]]></request>
+        <request><![CDATA[YOUR REQUEST 2]]></request>
+    </requests>
+</response>
+```
+14:06:27.894 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Retrieving response from cache
+14:06:27.894 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+```xml
+<response>
+    <reason><![CDATA[
+The variable `joinOn` is initialized as follows:
+
+    List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+
+There is no null check on `joinOn` before it is used in:
+
+    if (task.isLoopOverTask()) {
+        joinOn =
+                joinOn.stream()
+                        .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                        .collect(Collectors.toList());
+    }
+
+and then in:
+
+    for (String joinOnRef : joinOn) {
+
+Therefore, for `joinOn` to be guaranteed non-null, BOTH of the following would have to be true:
+
+1. `task.getInputData()` is non-null.
+2. `task.getInputData().get("joinOn")` always returns a non-null `List<String>` when this method is called.
+
+From the provided method alone:
+
+- There is no check that `task.getInputData()` is non-null.
+- There is no check that the map contains the key `"joinOn"`.
+- There is no default value assigned if `"joinOn"` is missing.
+- There is no documented contract shown here that guarantees `"joinOn"` is always present and non-null in `inputData`.
+
+If `task.getInputData().get("joinOn")` returns `null`:
+
+- `joinOn` becomes `null`.
+- If `task.isLoopOverTask()` is `true`, the call `joinOn.stream()` will immediately throw a `NullPointerException`.
+- If `task.isLoopOverTask()` is `false`, the enhanced for-loop `for (String joinOnRef : joinOn)` will also throw a `NullPointerException`.
+
+Thus, from static analysis of this method alone, the expression `joinOn` referenced in `for (String joinOnRef : joinOn)` CAN be `null` unless there is an external, strictly enforced contract on `task.getInputData()` that is not visible here. Since such a contract is not provided in the question, we must assume `null` is possible.
+    ]]></reason>
+    <value>YES</value>
+</response>
+```
+14:06:27.897 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+```xml
+<response>
+    <reason><![CDATA[
+The variable `joinOn` is initialized as follows:
+
+    List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+
+There is no null check on `joinOn` before it is used in:
+
+    if (task.isLoopOverTask()) {
+        joinOn =
+                joinOn.stream()
+                        .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                        .collect(Collectors.toList());
+    }
+
+and then in:
+
+    for (String joinOnRef : joinOn) {
+
+Therefore, for `joinOn` to be guaranteed non-null, BOTH of the following would have to be true:
+
+1. `task.getInputData()` is non-null.
+2. `task.getInputData().get("joinOn")` always returns a non-null `List<String>` when this method is called.
+
+From the provided method alone:
+
+- There is no check that `task.getInputData()` is non-null.
+- There is no check that the map contains the key `"joinOn"`.
+- There is no default value assigned if `"joinOn"` is missing.
+- There is no documented contract shown here that guarantees `"joinOn"` is always present and non-null in `inputData`.
+
+If `task.getInputData().get("joinOn")` returns `null`:
+
+- `joinOn` becomes `null`.
+- If `task.isLoopOverTask()` is `true`, the call `joinOn.stream()` will immediately throw a `NullPointerException`.
+- If `task.isLoopOverTask()` is `false`, the enhanced for-loop `for (String joinOnRef : joinOn)` will also throw a `NullPointerException`.
+
+Thus, from static analysis of this method alone, the expression `joinOn` referenced in `for (String joinOnRef : joinOn)` CAN be `null` unless there is an external, strictly enforced contract on `task.getInputData()` that is not visible here. Since such a contract is not provided in the question, we must assume `null` is possible.
+    ]]></reason>
+    <value>YES</value>
+</response>
+```
+14:06:27.903 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Agreement: The variable `joinOn` is initialized as follows:
+
+    List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+
+There is no null check on `joinOn` before it is used in:
+
+    if (task.isLoopOverTask()) {
+        joinOn =
+                joinOn.stream()
+                        .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                        .collect(Collectors.toList());
+    }
+
+and then in:
+
+    for (String joinOnRef : joinOn) {
+
+Therefore, for `joinOn` to be guaranteed non-null, BOTH of the following would have to be true:
+
+1. `task.getInputData()` is non-null.
+2. `task.getInputData().get("joinOn")` always returns a non-null `List<String>` when this method is called.
+
+From the provided method alone:
+
+- There is no check that `task.getInputData()` is non-null.
+- There is no check that the map contains the key `"joinOn"`.
+- There is no default value assigned if `"joinOn"` is missing.
+- There is no documented contract shown here that guarantees `"joinOn"` is always present and non-null in `inputData`.
+
+If `task.getInputData().get("joinOn")` returns `null`:
+
+- `joinOn` becomes `null`.
+- If `task.isLoopOverTask()` is `true`, the call `joinOn.stream()` will immediately throw a `NullPointerException`.
+- If `task.isLoopOverTask()` is `false`, the enhanced for-loop `for (String joinOnRef : joinOn)` will also throw a `NullPointerException`.
+
+Thus, from static analysis of this method alone, the expression `joinOn` referenced in `for (String joinOnRef : joinOn)` CAN be `null` unless there is an external, strictly enforced contract on `task.getInputData()` that is not visible here. Since such a contract is not provided in the question, we must assume `null` is possible.
+14:06:27.910 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveRemainingErrors
+Resolving remaining cast to nonnull
+14:06:27.916 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+In the method below, the expression joinOn is not nullable at the point it is used.
+
+```java
+@Override
+    @SuppressWarnings("unchecked")
+    public boolean execute(
+            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+
+        boolean foundExlusiveJoinOnTask = false;
+        boolean hasFailures = false;
+        StringBuilder failureReason = new StringBuilder();
+        TaskModel.Status taskStatus;
+        List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+        if (task.isLoopOverTask()) {
+            // If exclusive join is part of loop over task, wait for specific iteration to get
+            // complete
+            joinOn =
+                    joinOn.stream()
+                            .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                            .collect(Collectors.toList());
+        }
+        TaskModel exclusiveTask = null;
+        for (String joinOnRef : joinOn) {
+            LOGGER.debug("Exclusive Join On Task {} ", joinOnRef);
+            exclusiveTask = workflow.getTaskByRefName(joinOnRef);
+            if (exclusiveTask == null || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                LOGGER.debug("The task {} is either not scheduled or skipped.", joinOnRef);
+                continue;
+            }
+            taskStatus = exclusiveTask.getStatus();
+            foundExlusiveJoinOnTask = taskStatus.isTerminal();
+            hasFailures = !taskStatus.isSuccessful();
+            if (hasFailures) {
+                failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+            }
+
+            break;
+        }
+
+        if (!foundExlusiveJoinOnTask) {
+            List<String> defaultExclusiveJoinTasks =
+                    (List<String>) task.getInputData().get(DEFAULT_EXCLUSIVE_JOIN_TASKS);
+            LOGGER.info(
+                    "Could not perform exclusive on Join Task(s). Performing now on default exclusive join task(s) {}, workflow: {}",
+                    defaultExclusiveJoinTasks,
+                    workflow.getWorkflowId());
+            if (defaultExclusiveJoinTasks != null && !defaultExclusiveJoinTasks.isEmpty()) {
+                for (String defaultExclusiveJoinTask : defaultExclusiveJoinTasks) {
+                    // Pick the first task that we should join on and break.
+                    exclusiveTask = workflow.getTaskByRefName(defaultExclusiveJoinTask);
+                    if (exclusiveTask == null
+                            || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                        LOGGER.debug(
+                                "The task {} is either not scheduled or skipped.",
+                                defaultExclusiveJoinTask);
+                        continue;
+                    }
+
+                    taskStatus = exclusiveTask.getStatus();
+                    foundExlusiveJoinOnTask = taskStatus.isTerminal();
+                    hasFailures = !taskStatus.isSuccessful();
+                    if (hasFailures) {
+                        failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+                    }
+                    break;
+                }
+            } else {
+                LOGGER.debug(
+                        "Could not evaluate last tasks output. Verify the task configuration in the workflow definition.");
+            }
+        }
+
+        LOGGER.debug(
+                "Status of flags: foundExlusiveJoinOnTask: {}, hasFailures {}",
+                foundExlusiveJoinOnTask,
+                hasFailures);
+        if (foundExlusiveJoinOnTask || hasFailures) {
+            if (hasFailures) {
+                task.setReasonForIncompletion(failureReason.toString());
+                task.setStatus(TaskModel.Status.FAILED);
+            } else {
+                task.setOutputData(exclusiveTask.getOutputData());
+                task.setStatus(TaskModel.Status.COMPLETED);
+            }
+            LOGGER.debug("Task: {} status is: {}", task.getTaskId(), task.getStatus());
+            return true;
+        }
+        return false;
+}
+```
+Please rewrite the method so that at the line "        for (String joinOnRef : joinOn) {", at the occurrence of: "joinOn" is replaced with `Nullability.castToNonnull(joinOn)`
+See the example below, for expression `foo.getBar()`, wrap it with `Nullability.castToNonnull(foo.getBar())`.
+
+```java
+public t(){
+    String l = foo.getBar();
+}
+```
+
+will be:
+```java
+public t(){
+    String l = Nullability.castToNonnull(foo.getBar());
+}
+```
+
+### Instructions:
+
+Do not import any additional classes.
+
+Do not add Java comments.
+
+Only modify relevant lines as required.
+
+Return only the modified method wrapped in the XML format shown below.
+
+Place the Java code inside the <code> tag using a CDATA block with ```java formatting.
+
+Just give me the fixed code snippet in XML format in <response> tag like the example below. I will apply the fix to my codebase. Do not import any additional libraries or classes or add java comments. If you can provide the fixed code snippet, please provide it in the following format and place the code snippet in the <code> tag within ```java block.
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  Your fixed code snippet here
+  ```
+    ]]>
+  </code>
+</response>
+
+14:06:27.917 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+14:06:38.615 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  @Override
+    @SuppressWarnings("unchecked")
+    public boolean execute(
+            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+
+        boolean foundExlusiveJoinOnTask = false;
+        boolean hasFailures = false;
+        StringBuilder failureReason = new StringBuilder();
+        TaskModel.Status taskStatus;
+        List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+        if (task.isLoopOverTask()) {
+            joinOn =
+                    joinOn.stream()
+                            .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                            .collect(Collectors.toList());
+        }
+        TaskModel exclusiveTask = null;
+        for (String joinOnRef : Nullability.castToNonnull(joinOn)) {
+            LOGGER.debug("Exclusive Join On Task {} ", joinOnRef);
+            exclusiveTask = workflow.getTaskByRefName(joinOnRef);
+            if (exclusiveTask == null || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                LOGGER.debug("The task {} is either not scheduled or skipped.", joinOnRef);
+                continue;
+            }
+            taskStatus = exclusiveTask.getStatus();
+            foundExlusiveJoinOnTask = taskStatus.isTerminal();
+            hasFailures = !taskStatus.isSuccessful();
+            if (hasFailures) {
+                failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+            }
+
+            break;
+        }
+
+        if (!foundExlusiveJoinOnTask) {
+            List<String> defaultExclusiveJoinTasks =
+                    (List<String>) task.getInputData().get(DEFAULT_EXCLUSIVE_JOIN_TASKS);
+            LOGGER.info(
+                    "Could not perform exclusive on Join Task(s). Performing now on default exclusive join task(s) {}, workflow: {}",
+                    defaultExclusiveJoinTasks,
+                    workflow.getWorkflowId());
+            if (defaultExclusiveJoinTasks != null && !defaultExclusiveJoinTasks.isEmpty()) {
+                for (String defaultExclusiveJoinTask : defaultExclusiveJoinTasks) {
+                    exclusiveTask = workflow.getTaskByRefName(defaultExclusiveJoinTask);
+                    if (exclusiveTask == null
+                            || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                        LOGGER.debug(
+                                "The task {} is either not scheduled or skipped.",
+                                defaultExclusiveJoinTask);
+                        continue;
+                    }
+
+                    taskStatus = exclusiveTask.getStatus();
+                    foundExlusiveJoinOnTask = taskStatus.isTerminal();
+                    hasFailures = !taskStatus.isSuccessful();
+                    if (hasFailures) {
+                        failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+                    }
+                    break;
+                }
+            } else {
+                LOGGER.debug(
+                        "Could not evaluate last tasks output. Verify the task configuration in the workflow definition.");
+            }
+        }
+
+        LOGGER.debug(
+                "Status of flags: foundExlusiveJoinOnTask: {}, hasFailures {}",
+                foundExlusiveJoinOnTask,
+                hasFailures);
+        if (foundExlusiveJoinOnTask || hasFailures) {
+            if (hasFailures) {
+                task.setReasonForIncompletion(failureReason.toString());
+                task.setStatus(TaskModel.Status.FAILED);
+            } else {
+                task.setOutputData(exclusiveTask.getOutputData());
+                task.setStatus(TaskModel.Status.COMPLETED);
+            }
+            LOGGER.debug("Task: {} status is: {}", task.getTaskId(), task.getStatus());
+            return true;
+        }
+        return false;
+}
+  ```
+    ]]>
+  </code>
+</response>
+14:06:38.635 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  @Override
+    @SuppressWarnings("unchecked")
+    public boolean execute(
+            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+
+        boolean foundExlusiveJoinOnTask = false;
+        boolean hasFailures = false;
+        StringBuilder failureReason = new StringBuilder();
+        TaskModel.Status taskStatus;
+        List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+        if (task.isLoopOverTask()) {
+            joinOn =
+                    joinOn.stream()
+                            .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                            .collect(Collectors.toList());
+        }
+        TaskModel exclusiveTask = null;
+        for (String joinOnRef : Nullability.castToNonnull(joinOn)) {
+            LOGGER.debug("Exclusive Join On Task {} ", joinOnRef);
+            exclusiveTask = workflow.getTaskByRefName(joinOnRef);
+            if (exclusiveTask == null || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                LOGGER.debug("The task {} is either not scheduled or skipped.", joinOnRef);
+                continue;
+            }
+            taskStatus = exclusiveTask.getStatus();
+            foundExlusiveJoinOnTask = taskStatus.isTerminal();
+            hasFailures = !taskStatus.isSuccessful();
+            if (hasFailures) {
+                failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+            }
+
+            break;
+        }
+
+        if (!foundExlusiveJoinOnTask) {
+            List<String> defaultExclusiveJoinTasks =
+                    (List<String>) task.getInputData().get(DEFAULT_EXCLUSIVE_JOIN_TASKS);
+            LOGGER.info(
+                    "Could not perform exclusive on Join Task(s). Performing now on default exclusive join task(s) {}, workflow: {}",
+                    defaultExclusiveJoinTasks,
+                    workflow.getWorkflowId());
+            if (defaultExclusiveJoinTasks != null && !defaultExclusiveJoinTasks.isEmpty()) {
+                for (String defaultExclusiveJoinTask : defaultExclusiveJoinTasks) {
+                    exclusiveTask = workflow.getTaskByRefName(defaultExclusiveJoinTask);
+                    if (exclusiveTask == null
+                            || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                        LOGGER.debug(
+                                "The task {} is either not scheduled or skipped.",
+                                defaultExclusiveJoinTask);
+                        continue;
+                    }
+
+                    taskStatus = exclusiveTask.getStatus();
+                    foundExlusiveJoinOnTask = taskStatus.isTerminal();
+                    hasFailures = !taskStatus.isSuccessful();
+                    if (hasFailures) {
+                        failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+                    }
+                    break;
+                }
+            } else {
+                LOGGER.debug(
+                        "Could not evaluate last tasks output. Verify the task configuration in the workflow definition.");
+            }
+        }
+
+        LOGGER.debug(
+                "Status of flags: foundExlusiveJoinOnTask: {}, hasFailures {}",
+                foundExlusiveJoinOnTask,
+                hasFailures);
+        if (foundExlusiveJoinOnTask || hasFailures) {
+            if (hasFailures) {
+                task.setReasonForIncompletion(failureReason.toString());
+                task.setStatus(TaskModel.Status.FAILED);
+            } else {
+                task.setOutputData(exclusiveTask.getOutputData());
+                task.setStatus(TaskModel.Status.COMPLETED);
+            }
+            LOGGER.debug("Task: {} status is: {}", task.getTaskId(), task.getStatus());
+            return true;
+        }
+        return false;
+}
+  ```
+    ]]>
+  </code>
+</response>
+14:06:38.648 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+@Override
+    @SuppressWarnings("unchecked")
+    public boolean execute(
+            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+
+        boolean foundExlusiveJoinOnTask = false;
+        boolean hasFailures = false;
+        StringBuilder failureReason = new StringBuilder();
+        TaskModel.Status taskStatus;
+        List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+        if (task.isLoopOverTask()) {
+            joinOn =
+                    joinOn.stream()
+                            .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                            .collect(Collectors.toList());
+        }
+        TaskModel exclusiveTask = null;
+        for (String joinOnRef : Nullability.castToNonnull(joinOn)) {
+            LOGGER.debug("Exclusive Join On Task {} ", joinOnRef);
+            exclusiveTask = workflow.getTaskByRefName(joinOnRef);
+            if (exclusiveTask == null || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                LOGGER.debug("The task {} is either not scheduled or skipped.", joinOnRef);
+                continue;
+            }
+            taskStatus = exclusiveTask.getStatus();
+            foundExlusiveJoinOnTask = taskStatus.isTerminal();
+            hasFailures = !taskStatus.isSuccessful();
+            if (hasFailures) {
+                failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+            }
+
+            break;
+        }
+
+        if (!foundExlusiveJoinOnTask) {
+            List<String> defaultExclusiveJoinTasks =
+                    (List<String>) task.getInputData().get(DEFAULT_EXCLUSIVE_JOIN_TASKS);
+            LOGGER.info(
+                    "Could not perform exclusive on Join Task(s). Performing now on default exclusive join task(s) {}, workflow: {}",
+                    defaultExclusiveJoinTasks,
+                    workflow.getWorkflowId());
+            if (defaultExclusiveJoinTasks != null && !defaultExclusiveJoinTasks.isEmpty()) {
+                for (String defaultExclusiveJoinTask : defaultExclusiveJoinTasks) {
+                    exclusiveTask = workflow.getTaskByRefName(defaultExclusiveJoinTask);
+                    if (exclusiveTask == null
+                            || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                        LOGGER.debug(
+                                "The task {} is either not scheduled or skipped.",
+                                defaultExclusiveJoinTask);
+                        continue;
+                    }
+
+                    taskStatus = exclusiveTask.getStatus();
+                    foundExlusiveJoinOnTask = taskStatus.isTerminal();
+                    hasFailures = !taskStatus.isSuccessful();
+                    if (hasFailures) {
+                        failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+                    }
+                    break;
+                }
+            } else {
+                LOGGER.debug(
+                        "Could not evaluate last tasks output. Verify the task configuration in the workflow definition.");
+            }
+        }
+
+        LOGGER.debug(
+                "Status of flags: foundExlusiveJoinOnTask: {}, hasFailures {}",
+                foundExlusiveJoinOnTask,
+                hasFailures);
+        if (foundExlusiveJoinOnTask || hasFailures) {
+            if (hasFailures) {
+                task.setReasonForIncompletion(failureReason.toString());
+                task.setStatus(TaskModel.Status.FAILED);
+            } else {
+                task.setOutputData(exclusiveTask.getOutputData());
+                task.setStatus(TaskModel.Status.COMPLETED);
+            }
+            LOGGER.debug("Task: {} status is: {}", task.getTaskId(), task.getStatus());
+            return true;
+        }
+        return false;
+}
+14:06:38.648 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+14:06:38.650 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.fixDereferenceByRemainingCastToNonnull
+Fixing the error by adding castToNonnull
