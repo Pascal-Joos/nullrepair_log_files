@@ -1,0 +1,578 @@
+====================
+Type='DEREFERENCE_NULLABLE', message='dereferenced expression tween.getEquation() is @Nullable'
+/home/vscode/nullness-benchmarks/litiengine/src/de/gurkenlabs/litiengine/tweening/TweenEngine.java:169
+                  + tween.getEquation().compute(elapsed / (float) tween.getDuration())
+Log:
+12:59:33.198 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+==============================
+12:59:33.198 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.COUNT = 4
+12:59:33.198 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT.PROMPTS SIZE = 4
+12:59:33.198 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+CHATGPT TOKENS USAGE: Token usage - Uncached Prompt: 1846, Cached Prompt: 0, Completion: 1907, Total: 3753
+12:59:33.198 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+ChatGPT usage reset
+12:59:33.198 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+144 : TOP LEVEL CALL TO FIX ERROR: Type='DEREFERENCE_NULLABLE', message='dereferenced expression tween.getEquation() is @Nullable'
+/home/vscode/nullness-benchmarks/litiengine/src/de/gurkenlabs/litiengine/tweening/TweenEngine.java:169
+                  + tween.getEquation().compute(elapsed / (float) tween.getDuration())
+12:59:37.590 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.fix
+Fixing error: Type='DEREFERENCE_NULLABLE', message='dereferenced expression tween.getEquation() is @Nullable'
+/home/vscode/nullness-benchmarks/litiengine/src/de/gurkenlabs/litiengine/tweening/TweenEngine.java:169
+                  + tween.getEquation().compute(elapsed / (float) tween.getDuration())
+12:59:37.590 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Resolving dereference error: Type='DEREFERENCE_NULLABLE', message='dereferenced expression tween.getEquation() is @Nullable'
+/home/vscode/nullness-benchmarks/litiengine/src/de/gurkenlabs/litiengine/tweening/TweenEngine.java:169
+                  + tween.getEquation().compute(elapsed / (float) tween.getDuration())
+12:59:37.590 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError
+Checking nullability possibility at error point
+12:59:37.593 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkNullabilityPossibilityAtErrorPoint
+Asking if the expression can be null at error point point
+12:59:37.594 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the expression "tween.getEquation()" at line "+ tween.getEquation().compute(elapsed / (float) tween.getDuration())" can possibly be null in the method below.
+
+**Method:**
+@Override
+  public void update() {
+    for (final Tweenable target : this.getTweens().keySet()) {
+      for (final Tween tween : this.getTweens().get(target).values()) {
+        if (tween.hasStopped()) {
+          continue;
+        }
+        final long elapsed = Game.time().since(tween.getStartTime());
+        if (elapsed >= tween.getDuration()) {
+          tween.stop();
+          continue;
+        }
+        final float[] currentValues = new float[tween.getTargetValues().length];
+        for (int i = 0; i < tween.getTargetValues().length; i++) {
+          currentValues[i] =
+              tween.getStartValues()[i]
+                  + tween.getEquation().compute(elapsed / (float) tween.getDuration())
+                      * (tween.getTargetValues()[i] - tween.getStartValues()[i]);
+        }
+        tween.getTarget().setTweenValues(tween.getType(), currentValues);
+      }
+    }
+}
+
+### Analysis Requirements:
+- Examine all code paths leading to the expression
+- Consider variable assignments, method return values, and control flow
+- Look for null checks, initializations, and guarantees from prior operations
+- Consider the semantics and contracts of called methods
+
+### Response Format:
+
+**If the expression CAN be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>YES</value>
+</response>
+```
+
+**If the expression CANNOT be null:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>NO</value>
+</response>
+```
+
+**If you need more information to make a determination:**
+```xml
+<response>
+    <reason><![CDATA[YOUR REASON]]></reason>
+    <value>UNKNOWN</value>
+    <!-- Include <requests> only if additional information is needed -->
+    <requests>
+        <request><![CDATA[YOUR REQUEST 1]]></request>
+        <request><![CDATA[YOUR REQUEST 2]]></request>
+    </requests>
+</response>
+```
+12:59:37.594 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+12:59:46.983 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+```xml
+<response>
+    <reason><![CDATA[
+From the provided method alone, there is no explicit guarantee that tween.getEquation() is non-null:
+
+- There are no null checks on tween.getEquation() in this method.
+- The method never assigns a value to the equation itself; it only calls the getter.
+- The behavior and contract of tween.getEquation() are not shown. Whether it can return null depends entirely on:
+  - How Tween objects are constructed/initialized.
+  - Whether setEquation(...) (or equivalent) is always called.
+  - Whether getEquation() is specified (by code or documentation) to never return null.
+
+Because we do not see the Tween class implementation, nor any invariant (such as an @NonNull annotation or constructor enforcing a non-null equation), we cannot rule out:
+- A Tween created without an equation.
+- A Tween’s equation being cleared or left null due to a logic error.
+
+Thus, based solely on the provided method and without the definition/contract of Tween and its getEquation() method, we cannot safely conclude that tween.getEquation() is never null. We also cannot definitively assert that it can be null, because it might be enforced as non-null elsewhere in the codebase.
+
+Therefore, the correct determination with the given information is UNKNOWN.
+    ]]></reason>
+    <value>UNKNOWN</value>
+    <requests>
+        <request><![CDATA[Provide the implementation of the Tween class, especially:
+- The fields and initialization related to the "equation" (type and name of the field).
+- All constructors for Tween.
+- Any setter methods that modify the equation.
+- The full implementation and contract (Javadoc, annotations) of getEquation().]]></request>
+        <request><![CDATA[Indicate whether there are external guarantees or framework constraints (e.g., annotations like @NonNull, or documented invariants) that promise the equation is always non-null for any Tween that reaches the update() method.]]></request>
+    </requests>
+</response>
+```
+12:59:46.984 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+```xml
+<response>
+    <reason><![CDATA[
+From the provided method alone, there is no explicit guarantee that tween.getEquation() is non-null:
+
+- There are no null checks on tween.getEquation() in this method.
+- The method never assigns a value to the equation itself; it only calls the getter.
+- The behavior and contract of tween.getEquation() are not shown. Whether it can return null depends entirely on:
+  - How Tween objects are constructed/initialized.
+  - Whether setEquation(...) (or equivalent) is always called.
+  - Whether getEquation() is specified (by code or documentation) to never return null.
+
+Because we do not see the Tween class implementation, nor any invariant (such as an @NonNull annotation or constructor enforcing a non-null equation), we cannot rule out:
+- A Tween created without an equation.
+- A Tween’s equation being cleared or left null due to a logic error.
+
+Thus, based solely on the provided method and without the definition/contract of Tween and its getEquation() method, we cannot safely conclude that tween.getEquation() is never null. We also cannot definitively assert that it can be null, because it might be enforced as non-null elsewhere in the codebase.
+
+Therefore, the correct determination with the given information is UNKNOWN.
+    ]]></reason>
+    <value>UNKNOWN</value>
+    <requests>
+        <request><![CDATA[Provide the implementation of the Tween class, especially:
+- The fields and initialization related to the "equation" (type and name of the field).
+- All constructors for Tween.
+- Any setter methods that modify the equation.
+- The full implementation and contract (Javadoc, annotations) of getEquation().]]></request>
+        <request><![CDATA[Indicate whether there are external guarantees or framework constraints (e.g., annotations like @NonNull, or documented invariants) that promise the equation is always non-null for any Tween that reaches the update() method.]]></request>
+    </requests>
+</response>
+```
+12:59:46.986 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Unknown: From the provided method alone, there is no explicit guarantee that tween.getEquation() is non-null:
+
+- There are no null checks on tween.getEquation() in this method.
+- The method never assigns a value to the equation itself; it only calls the getter.
+- The behavior and contract of tween.getEquation() are not shown. Whether it can return null depends entirely on:
+  - How Tween objects are constructed/initialized.
+  - Whether setEquation(...) (or equivalent) is always called.
+  - Whether getEquation() is specified (by code or documentation) to never return null.
+
+Because we do not see the Tween class implementation, nor any invariant (such as an @NonNull annotation or constructor enforcing a non-null equation), we cannot rule out:
+- A Tween created without an equation.
+- A Tween’s equation being cleared or left null due to a logic error.
+
+Thus, based solely on the provided method and without the definition/contract of Tween and its getEquation() method, we cannot safely conclude that tween.getEquation() is never null. We also cannot definitively assert that it can be null, because it might be enforced as non-null elsewhere in the codebase.
+
+Therefore, the correct determination with the given information is UNKNOWN.
+12:59:46.986 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+12:59:46.993 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveMethodDereferenceError
+Resolving method dereference error.
+12:59:46.993 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveMethodDereferenceError
+Method is in annotated package. Checking if the method is returning nullable.
+12:59:46.993 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.investigateMethodReturnNullability
+Checking if the method is returning nullable.
+12:59:46.999 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkIfMethodIsReturningNullable
+Asking if the method is returning nullable: getEquation()
+12:59:47.004 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the method below can return null by analyzing its implementation.
+
+**Method to analyze:**
+@Nullable
+  public TweenEquation getEquation() {
+    return this.equation;
+}
+
+### Analysis Guidelines:
+- Examine all return paths and return statements
+- If the method calls other methods, do not assume their return values unless declarations are provided
+- Exception paths should not be considered null returns (exceptions are not null values)
+- Carefully analyze conditions and operations that may guarantee a non-null return value
+- Request declarations of any methods whose return values directly or indirectly impact this method's return value
+
+**Additional method definitions provided:**
+Depth: 0
+```java
+class de.gurkenlabs.litiengine.tweening.Tween {
+@Nullable
+  public TweenEquation getEquation() {
+    return this.equation;
+}
+}
+```
+
+
+### Response Format:
+
+**If the method CANNOT return null:**
+```xml
+<response>
+  <reason><![CDATA[Explain why the method cannot return null]]></reason>
+  <value>NO</value>
+</response>
+```
+
+**If the method CAN return null:**
+```xml
+<response>
+  <reason><![CDATA[Explain why the method can return null and under what conditions]]></reason>
+  <value>YES</value>
+</response>
+```
+
+**If you need declarations of other methods to make a determination:**
+```xml
+<response>
+  <reason><![CDATA[Explain why you need these method declarations to make a confident decision]]></reason>
+  <value>UNKNOWN</value>
+  <methods>
+    <method>methodName</method>
+  </methods>
+</response>
+```
+
+**If you need additional information beyond method declarations:**
+```xml
+<response>
+    <reason><![CDATA[Explain what additional information you need]]></reason>
+    <value>UNKNOWN</value>
+    <requests>
+        <request><![CDATA[Specific request 1]]></request>
+        <request><![CDATA[Specific request 2]]></request>
+    </requests>
+</response>
+```
+
+### Important Notes:
+- Be precise and specific in your reasoning
+- If a method's return value depends on another method not provided, request its declaration
+- If the method can return null in some cases but not others, explain the specific conditions
+
+12:59:47.004 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+12:59:54.678 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+```xml
+<response>
+  <reason><![CDATA[
+The method directly returns the value of the instance field `this.equation` without any checks, initialization, or transformations:
+
+  public TweenEquation getEquation() {
+    return this.equation;
+  }
+
+From the provided snippet, there is no guarantee that `this.equation` is ever assigned a non-null value. There is also no indication of:
+- A constructor that always initializes `equation` to a non-null value
+- A setter or other method that enforces non-null assignments
+- Annotations (like @NonNull) or other invariants that would guarantee non-nullness
+
+Given only this class fragment, `equation` could be left uninitialized (and thus be null) or explicitly set to null elsewhere. Therefore, this getter can return null whenever `this.equation` is null. Without more information about how and where `equation` is assigned, we must conclude that a null return is possible.
+  ]]></reason>
+  <value>YES</value>
+</response>
+```
+12:59:54.679 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+```xml
+<response>
+  <reason><![CDATA[
+The method directly returns the value of the instance field `this.equation` without any checks, initialization, or transformations:
+
+  public TweenEquation getEquation() {
+    return this.equation;
+  }
+
+From the provided snippet, there is no guarantee that `this.equation` is ever assigned a non-null value. There is also no indication of:
+- A constructor that always initializes `equation` to a non-null value
+- A setter or other method that enforces non-null assignments
+- Annotations (like @NonNull) or other invariants that would guarantee non-nullness
+
+Given only this class fragment, `equation` could be left uninitialized (and thus be null) or explicitly set to null elsewhere. Therefore, this getter can return null whenever `this.equation` is null. Without more information about how and where `equation` is assigned, we must conclude that a null return is possible.
+  ]]></reason>
+  <value>YES</value>
+</response>
+```
+12:59:54.680 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Agreement: The method directly returns the value of the instance field `this.equation` without any checks, initialization, or transformations:
+
+  public TweenEquation getEquation() {
+    return this.equation;
+  }
+
+From the provided snippet, there is no guarantee that `this.equation` is ever assigned a non-null value. There is also no indication of:
+- A constructor that always initializes `equation` to a non-null value
+- A setter or other method that enforces non-null assignments
+- Annotations (like @NonNull) or other invariants that would guarantee non-nullness
+
+Given only this class fragment, `equation` could be left uninitialized (and thus be null) or explicitly set to null elsewhere. Therefore, this getter can return null whenever `this.equation` is null. Without more information about how and where `equation` is assigned, we must conclude that a null return is possible.
+12:59:54.680 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+12:59:54.681 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.checkIfMethodIsReturningNullableOnCallSite
+Asking if the method is returning nullable on the call site: tween.getEquation()
+12:59:54.698 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Asking ChatGPT:
+Determine if the method below can return null **at the specific call site provided**.
+
+**Method:**
+```java
+@Nullable
+  public TweenEquation getEquation() {
+    return this.equation;
+}
+```
+
+### Analysis Guidelines:
+- **Analyze only this specific call site**, not all possible invocations of the method
+- Consider all return paths within the method
+- If the method calls other methods, do not assume their return values unless their full declarations are provided
+- Exception paths should not be considered null returns (exceptions are not null values)
+- If the method's return value depends on a parameter, evaluate based on the actual argument passed at this call site
+- Request declarations of any methods whose return values directly or indirectly impact this method's return value
+
+### call site:
+tween.getEquation()
+
+**Call chain and method definitions:**
+The following shows the call chain and relevant method definitions:
+
+Depth: 0
+```java
+class de.gurkenlabs.litiengine.tweening.Tween {
+@Nullable
+  public TweenEquation getEquation() {
+    return this.equation;
+}
+}
+```
+Depth: 1
+```java
+class de.gurkenlabs.litiengine.tweening.TweenEngine {
+@Override
+  public void update() {
+    for (final Tweenable target : this.getTweens().keySet()) {
+      for (final Tween tween : this.getTweens().get(target).values()) {
+        if (tween.hasStopped()) {
+          continue;
+        }
+        final long elapsed = Game.time().since(tween.getStartTime());
+        if (elapsed >= tween.getDuration()) {
+          tween.stop();
+          continue;
+        }
+        final float[] currentValues = new float[tween.getTargetValues().length];
+        for (int i = 0; i < tween.getTargetValues().length; i++) {
+          currentValues[i] =
+              tween.getStartValues()[i]
+                  + tween.getEquation().compute(elapsed / (float) tween.getDuration())
+                      * (tween.getTargetValues()[i] - tween.getStartValues()[i]);
+        }
+        tween.getTarget().setTweenValues(tween.getType(), currentValues);
+      }
+    }
+}
+}
+```
+
+
+### Response Format:
+
+**If the method CANNOT return null at this specific call site:**
+```xml
+<response>
+  <reason><![CDATA[EXPLAIN WHY THE INVOCATION tween.getEquation() RESULT CANNOT BE NULL.]]></reason>
+  <value>NO</value>
+</response>
+```
+
+**If the method CAN return null at this specific call site:**
+```xml
+<response>
+  <reason><![CDATA[EXPLAIN WHY THE INVOCATION tween.getEquation() RESULT CAN BE NULL.]]></reason>
+  <value>YES</value>
+</response>
+```
+
+**If you need declarations of other methods to make a determination:**
+```xml
+<response>
+  <reason><![CDATA[Explain why you need these method declarations to make a confident decision]]></reason>
+  <success>false</success>
+  <methods>
+    <method>methodName</method>
+  </methods>
+</response>
+```
+
+### Important Notes:
+- Be precise and specific in your reasoning
+- If the method's return value depends on another method not provided, request its declaration
+- If the method can return null in some cases but not this one, explain why this specific invocation is different
+
+12:59:54.699 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Sending request to OpenAI...
+13:00:00.406 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.tryCreate
+Trying to create Response:
+<response>
+  <reason><![CDATA[
+At this call site, `tween.getEquation()` simply returns the field `this.equation` of the `Tween` instance:
+
+```java
+public TweenEquation getEquation() {
+  return this.equation;
+}
+```
+
+There is no initialization or invariant shown for `equation` in the provided code. The `update()` method in `TweenEngine` does not guard against `null` and immediately calls:
+
+```java
+tween.getEquation().compute(...)
+```
+
+which would throw a `NullPointerException` if `equation` were `null`. The presence of this call does not, by itself, prove that `equation` is never `null`; it only shows that the code expects a non-null value, not that it guarantees it.
+
+Since:
+- the value of `this.equation` depends on how `Tween` instances are constructed or modified, and
+- no constructor, setter, or other initialization logic for `equation` is provided,
+
+we cannot determine from the given snippets whether `equation` is always non-null when `update()` is executed. Therefore, it is possible that `tween.getEquation()` returns `null` at this call site unless other class members enforce non-nullity, which we have not seen.
+
+To make a confident determination, we need to see how `equation` is assigned.
+]]></reason>
+  <success>false</success>
+  <methods>
+    <method>de.gurkenlabs.litiengine.tweening.Tween.(constructors and any setters or builders that assign `equation`)</method>
+  </methods>
+</response>
+13:00:00.407 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+  <reason><![CDATA[
+At this call site, `tween.getEquation()` simply returns the field `this.equation` of the `Tween` instance:
+
+```java
+public TweenEquation getEquation() {
+  return this.equation;
+}
+```
+
+There is no initialization or invariant shown for `equation` in the provided code. The `update()` method in `TweenEngine` does not guard against `null` and immediately calls:
+
+```java
+tween.getEquation().compute(...)
+```
+
+which would throw a `NullPointerException` if `equation` were `null`. The presence of this call does not, by itself, prove that `equation` is never `null`; it only shows that the code expects a non-null value, not that it guarantees it.
+
+Since:
+- the value of `this.equation` depends on how `Tween` instances are constructed or modified, and
+- no constructor, setter, or other initialization logic for `equation` is provided,
+
+we cannot determine from the given snippets whether `equation` is always non-null when `update()` is executed. Therefore, it is possible that `tween.getEquation()` returns `null` at this call site unless other class members enforce non-nullity, which we have not seen.
+
+To make a confident determination, we need to see how `equation` is assigned.
+]]></reason>
+  <success>false</success>
+  <methods>
+    <method>de.gurkenlabs.litiengine.tweening.Tween.(constructors and any setters or builders that assign `equation`)</method>
+  </methods>
+</response>
+13:00:00.408 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Failed
+13:00:00.409 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.ChatGPT.ask
+Cached response
+13:00:00.410 TRACE edu.ucr.cs.riple.core.registries.method.invocation.InvocationRecord.addRequestedMethodsByNames
+Adding requested methods to invocation record: [de.gurkenlabs.litiengine.tweening.Tween.(constructors and any setters or builders that assign `equation`)]
+13:00:00.410 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.checkIfMethodIsReturningNullableOnCallSite
+Could not add requested methods by names.
+13:00:00.410 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Creating Response:
+<response>
+<value>YES</value>
+</response>
+13:00:00.411 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.Response.<init>
+Response created:
+Agreement: 
+13:00:00.411 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveMethodDereferenceError
+Trying to fix by regions using the method as an example.
+13:00:00.411 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.fixErrorByRegions
+Fixing error by regions.
+13:00:00.412 TRACE edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.getTriggeredErrorsFromLocation
+Impact not found, re-evaluating the location.
+13:00:00.461 TRACE edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18
+--------Exception occurred in computing fix-------- | 144
+java.io.UncheckedIOException: java.util.zip.ZipException: ZipFile invalid LOC header (bad signature)
+	at java.base/java.io.BufferedReader$1.hasNext(BufferedReader.java:574)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:132)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1845)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:682)
+	at org.jline.utils.InfoCmp.loadDefaultInfoCmp(InfoCmp.java:613)
+	at org.jline.utils.InfoCmp.lambda$static$3(InfoCmp.java:623)
+	at org.jline.utils.InfoCmp.getLoadedInfoCmp(InfoCmp.java:557)
+	at org.jline.terminal.impl.AbstractTerminal.parseInfoCmp(AbstractTerminal.java:209)
+	at org.jline.terminal.impl.DumbTerminal.<init>(DumbTerminal.java:88)
+	at org.jline.terminal.TerminalBuilder.doBuild(TerminalBuilder.java:447)
+	at org.jline.terminal.TerminalBuilder.build(TerminalBuilder.java:271)
+	at me.tongfei.progressbar.TerminalUtils.getTerminal(TerminalUtils.java:83)
+	at me.tongfei.progressbar.TerminalUtils.hasCursorMovementSupport(TerminalUtils.java:37)
+	at me.tongfei.progressbar.Util.createConsoleConsumer(Util.java:32)
+	at me.tongfei.progressbar.Util.createConsoleConsumer(Util.java:28)
+	at me.tongfei.progressbar.ProgressBar.<init>(ProgressBar.java:68)
+	at edu.ucr.cs.riple.core.util.Utility.createProgressBar(Utility.java:410)
+	at edu.ucr.cs.riple.core.evaluators.graph.processors.ParallelConflictGraphProcessor.process(ParallelConflictGraphProcessor.java:73)
+	at edu.ucr.cs.riple.core.evaluators.AbstractEvaluator.evaluate(AbstractEvaluator.java:103)
+	at edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.getTriggeredErrorsFromLocation(AdvancedNullAwayCodeFix.java:967)
+	at edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.fixErrorByRegions(AdvancedNullAwayCodeFix.java:604)
+	at edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveMethodDereferenceError(AdvancedNullAwayCodeFix.java:486)
+	at edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceErrorElementType(AdvancedNullAwayCodeFix.java:416)
+	at edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.resolveDereferenceError(AdvancedNullAwayCodeFix.java:403)
+	at edu.ucr.cs.riple.core.checkers.nullaway.codefix.AdvancedNullAwayCodeFix.fix(AdvancedNullAwayCodeFix.java:138)
+	at edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$18(NullAway.java:476)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at edu.ucr.cs.riple.core.checkers.nullaway.NullAway.lambda$resolveRemainingErrors$19(NullAway.java:425)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:183)
+	at java.base/java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:357)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:150)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:173)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at edu.ucr.cs.riple.core.checkers.nullaway.NullAway.resolveRemainingErrors(NullAway.java:418)
+	at edu.ucr.cs.riple.core.Annotator.annotate(Annotator.java:131)
+	at edu.ucr.cs.riple.core.Annotator.start(Annotator.java:87)
+	at edu.ucr.cs.riple.core.Main.main(Main.java:253)
+Caused by: java.util.zip.ZipException: ZipFile invalid LOC header (bad signature)
+	at java.base/java.util.zip.ZipFile$ZipFileInputStream.initDataOffset(ZipFile.java:928)
+	at java.base/java.util.zip.ZipFile$ZipFileInputStream.read(ZipFile.java:939)
+	at java.base/java.util.zip.ZipFile$ZipFileInflaterInputStream.fill(ZipFile.java:456)
+	at java.base/java.util.zip.InflaterInputStream.read(InflaterInputStream.java:158)
+	at java.base/java.io.FilterInputStream.read(FilterInputStream.java:132)
+	at org.jline.utils.InputStreamReader.read(InputStreamReader.java:270)
+	at java.base/java.io.BufferedReader.fill(BufferedReader.java:162)
+	at java.base/java.io.BufferedReader.readLine(BufferedReader.java:329)
+	at java.base/java.io.BufferedReader.readLine(BufferedReader.java:396)
+	at java.base/java.io.BufferedReader$1.hasNext(BufferedReader.java:571)
+	... 43 common frames omitted
