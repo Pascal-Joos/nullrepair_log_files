@@ -42,7 +42,6 @@ glide 16 (proper handling)
 libgdx 63: NullRepair propagates null-handling. Others set unmeaningful defaults.  
 libgdx 249: Across 2 files  
 litiengine 97: Across 2 files  
-libgdx 445  
 glide 17: Basic sets unmeaningful default  
 libgdx 355: Baselines set unmeaningful defaults. NullRepair propagates changed annotation  
 libgdx 181: Handling across 2 files. Baselines set non-meaningful defaults
@@ -153,6 +152,7 @@ libgdx 42: NullRepair and Agent baseline both 1.
 
 Examples:  
 libgdx 196  
+libgdx 445  
 
 
 
