@@ -111,21 +111,49 @@ gson 7: NullRepair wrongly decided TP.
 
 ### Why reviewers scored as tie:
 
-#### All approaches sometimes fail to recognize complex initialization patterns, leading to incomplete or unnecessary changes. (paper) (orange color)
-Examples:
-libgdx 437
+#### All approaches sometimes fail to recognize complex initialization patterns, leading to incomplete or unnecessary changes. (non-recognized FP) (paper) (orange color)
+
+Examples:  
+libgdx 437  
+litiengine 114  
+libgdx 360  
+libgdx 331  
+libgdx 309  
+libgdx 322  
+litiengine 85: Correct track but both NullRepair and agent_baseline are incomplete  
+libgdx 319  
+libgdx 175: Not quite complete (both NullRepair and basic)  
+glide 36  
 
 #### Sometimes made changes contradict NullAway annotations => Correcting the annotations would be needed (yellow color)
-Examples:
-libgdx 102
-(jadx 9: This is a NullRepair loss, but actually for all the annotations would need changing.)
+
+Examples:  
+libgdx 102  
+(jadx 9: This is a NullRepair loss, but actually for all the annotations would need changing.)  
+jadx 61: Nullable should be removed  
+libgdx 214  
+libgdx 67 Nullable should be removed  
+spring-boot 17 Nullable should be removed  
+
 
 #### Sometimes (all three) produce similarly effective local edits with minimal context required. (paper) (green color)
-Examples:
-libgdx 252
-litiengine 29
-spring-boot 56
-libgdx 442
+
+Examples:  
+libgdx 252  
+litiengine 29  
+spring-boot 56  
+libgdx 442  
+jadx 89: Actually NullRepair is best here with suppression, but still scored as 2, as developers might not like it.  
+litiengine 4  
+spring-boot 20  
+libgdx 42: NullRepair and Agent baseline both 1.  
+
+
+#### Baselines are completely off track. NullRepair is closer, but makes unnecessary or incomplete changes and therefore has the same score. (grey color)
+
+Examples:  
+libgdx 196  
+
 
 
 
