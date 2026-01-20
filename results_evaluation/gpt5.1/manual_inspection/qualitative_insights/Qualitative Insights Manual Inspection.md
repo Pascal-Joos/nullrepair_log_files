@@ -85,9 +85,27 @@ litiengine 22: NullRepair is too complex
 spring-boot 32: Wrong FP assumption by NullRepair
 litiengine 78: Wrong FP assumption by NullRepair
 libgdx 113: NullRepair is too complex and not idiomatic. Others are not perfect either but better.
+jadx 9: All not good, but fail fast better than NullRepair.  
+glide 9: NullRepair introduces an unrelated change  
+glide 45: NullRepair introduces an unrelated change  
+litiengine 76: Basic silently returns  
+libgdx 363: NullRepair introduces an unrelated change  
+zuul 10: NullRepair is not quite idiomatic, as it introduces nearly unnecessary variable  
+gson 2: NullRepair only moves the warning weirdly.  
+litiengine 130: NullRepair introduces an unrelated change (superfluous, wrong check)  
+eureka 13: NullRepair doesn't add the needed logging in the case.  
+glide 10: NullRepair adds functionality when variable is null that is not intended  
+libgdx 100: Wrong decision of making nullable. Basic sets meaningful default  
+wala-util 31: Wrong FP assumption by NullRepair  
+gson 19: NullRepair introduces an unrelated change. Clutters with null-checks.  
+litiengine 100: NullRepair introduces an unrelated change.  
 
 
+#### It is a FP. Baseline created a smarter local fix that is more idiomatic. (pink color)
 
+Examples:
+wala-util 35  
+gson 7: NullRepair wrongly decided TP.  
 
 
 
