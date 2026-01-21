@@ -78,12 +78,12 @@ glide 67
 
 #### Error is genuine nullability issue and baselines produce fail-fast local fix to ensure safety (or reasonable default values if null). NullRepair is too complex or incorrect (e.g., wrong FP assumption). (paper) (red color)
 
-Examples:
-eureka 1: Fix attempt by NullRepair is too complex, and propagates the error to reference locations instead of failing fast on site. The simpler failing by the baselines is correct here.
-litiengine 22: NullRepair is too complex
-spring-boot 32: Wrong FP assumption by NullRepair
-litiengine 78: Wrong FP assumption by NullRepair
-libgdx 113: NullRepair is too complex and not idiomatic. Others are not perfect either but better.
+Examples:  
+eureka 1: Fix attempt by NullRepair is too complex, and propagates the error to reference locations instead of failing fast on site. The simpler failing by the baselines is correct here.  
+litiengine 22: NullRepair is too complex  
+spring-boot 32: Wrong FP assumption by NullRepair  
+litiengine 78: Wrong FP assumption by NullRepair  
+libgdx 113: NullRepair is too complex and not idiomatic. Others are not perfect either but better.  
 jadx 9: All not good, but fail fast better than NullRepair.  
 glide 9: NullRepair introduces an unrelated change  
 glide 45: NullRepair introduces an unrelated change  
@@ -98,19 +98,48 @@ libgdx 100: Wrong decision of making nullable. Basic sets meaningful default
 wala-util 31: Wrong FP assumption by NullRepair  
 gson 19: NullRepair introduces an unrelated change. Clutters with null-checks.  
 litiengine 100: NullRepair introduces an unrelated change.  
+wala-util 35: FP where baseline created more idiomatic fix
+gson 7: NullRepair wrongly decided TP. Basline created more idiomatic fix.
+
+Further classification:
+
+Too complex:  
+eureka 1: Fix attempt by NullRepair is too complex, and propagates the error to reference locations instead of failing fast on site. The simpler failing by the baselines is correct here.  
+litiengine 22: NullRepair is too complex  
+libgdx 113: NullRepair is too complex and not idiomatic. Others are not perfect either but better.  
+
+Baseline more idiomatic:  
+jadx 9: All not good, but fail fast better than NullRepair.  
+litiengine 76: Basic silently returns  
+zuul 10: NullRepair is not quite idiomatic, as it introduces nearly unnecessary variable  
+gson 2: NullRepair only moves the warning weirdly.  
+eureka 13: NullRepair doesn't add the needed logging in the case.  
+libgdx 100: Wrong decision of making nullable. Basic sets meaningful default  
+wala-util 35: FP where baseline created more idiomatic fix
+
+Unrelated change:  
+glide 9: NullRepair introduces an unrelated change  
+glide 45: NullRepair introduces an unrelated change  
+libgdx 363: NullRepair introduces an unrelated change  
+litiengine 130: NullRepair introduces an unrelated change (superfluous, wrong check)  
+glide 10: NullRepair adds functionality when variable is null that is not intended  
+gson 19: NullRepair introduces an unrelated change. Clutters with null-checks.  
+litiengine 100: NullRepair introduces an unrelated change.  
+
+Wrong FP decision:  
+spring-boot 32: Wrong FP assumption by NullRepair
+litiengine 78: Wrong FP assumption by NullRepair  
+wala-util 31: Wrong FP assumption by NullRepair  
+gson 7: NullRepair wrongly decided TP. Baseline created more idiomatic fix.
 
 
-#### It is a FP. Baseline created a smarter local fix that is more idiomatic. (pink color)
 
-Examples:
-wala-util 35  
-gson 7: NullRepair wrongly decided TP.  
 
 
 
 ### Why reviewers scored as tie:
 
-#### All approaches sometimes fail to recognize complex initialization patterns, leading to incomplete or unnecessary changes. (non-recognized FP) (paper) (orange color)
+#### All approaches sometimes fail to recognize complex initialization or assignment patterns, leading to incomplete or unnecessary changes. (non-recognized FP) (paper) (orange color)
 
 Examples:  
 libgdx 437  
@@ -127,8 +156,7 @@ glide 36
 #### Sometimes made changes contradict NullAway annotations => Correcting the annotations would be needed (yellow color)
 
 Examples:  
-libgdx 102  
-(jadx 9: This is a NullRepair loss, but actually for all the annotations would need changing.)  
+libgdx 102   
 jadx 61: Nullable should be removed  
 libgdx 214  
 libgdx 67 Nullable should be removed  
@@ -141,6 +169,7 @@ Examples:
 libgdx 252  
 litiengine 29  
 spring-boot 56  
+eureka 4  
 libgdx 442  
 jadx 89: Actually NullRepair is best here with suppression, but still scored as 2, as developers might not like it.  
 litiengine 4  
@@ -153,6 +182,8 @@ libgdx 42: NullRepair and Agent baseline both 1.
 Examples:  
 libgdx 196  
 libgdx 445  
+
+merged into first (orange color)
 
 
 
