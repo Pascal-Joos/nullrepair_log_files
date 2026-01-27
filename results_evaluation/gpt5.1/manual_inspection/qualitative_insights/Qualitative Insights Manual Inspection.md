@@ -195,3 +195,14 @@ merged into first (orange color)
 The two baselines often produce very similar fixes. Especially, if fixes are simple/local.  
 NullRepair can be quite different as it uses a more methodical approach in creating fixes.
 
+
+### Correctness of classifications
+
+Correct TP: 27  
+
+Correct FP: 33  
+
+Incorrect TP: 9  
+
+Incorrect FP: 6  
+
