@@ -206,3 +206,7 @@ Incorrect TP: 9
 
 Incorrect FP: 6  
 
+Recall: 0.8182  
+Precision: 0.75  
+Accuracy: 0.8  
+F1-Score: 0.7826  
